@@ -98,8 +98,3 @@ fun FileSpec.Builder.addClass(name: ClassName, build: TypeSpec.Builder.() -> Uni
 fun FileSpec.Builder.addClass(name: String, build: TypeSpec.Builder.() -> Unit) {
     addType(TypeSpec.classBuilder(name).apply(build).build())
 }
-
-// - file
-fun createFile(pkg: String, name: String, build: FileSpec.Builder.() -> Unit): FileSpec {
-    return FileSpec.builder(pkg, name).apply(build).build()
-}

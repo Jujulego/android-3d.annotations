@@ -3,6 +3,7 @@ package net.capellari.julien.threed.annotations.processor
 import androidx.annotation.RequiresApi
 import com.squareup.kotlinpoet.*
 import com.squareup.kotlinpoet.ParameterizedTypeName.Companion.parameterizedBy
+import net.capellari.julien.threed.annotations.kotlinwriter.createFile
 import net.capellari.julien.threed.annotations.math.NumberType
 import net.capellari.julien.threed.annotations.math.PointClass
 import javax.annotation.processing.ProcessingEnvironment
@@ -80,15 +81,15 @@ class PointGenerator(processingEnv: ProcessingEnvironment) {
         val code = createFile(pkg, clsName.simpleName) {
             addClass(clsName) {
                 // superclass
-                superclass(ClassName("net.capellari.julien.threed.jni", "JNIClass"))
-                addSuperclassConstructorParameter("handle", Long::class)
+                superclass("net.capellari.julien.threed.jni", "JNIClass")
+                addSuperclassParameter("handle")
 
                 // interface
                 addSuperinterface(baseName)
                 addSuperinterface(getInterface(point, "Point"))
 
                 // Companion
-                addCompanion {
+                builder.addCompanion {
                     addFunction("create") {
                         addAnnotation(JvmStatic::class)
                         addModifiers(KModifier.PRIVATE, KModifier.EXTERNAL)
@@ -112,23 +113,23 @@ class PointGenerator(processingEnv: ProcessingEnvironment) {
                 }
 
                 // Propriétés
-                addProperty("data", numberArray) {
+                builder.addProperty("data", numberArray) {
                     getter {
                         addStatement("return getDataA()")
                     }
                 }
 
                 // Constructeurs
-                addPrimaryConstructor {
+                builder.addPrimaryConstructor {
                     addModifiers(KModifier.INTERNAL)
                     addParameter("handle", Long::class)
                 }
 
-                addConstructor {
+                builder.addConstructor {
                     callThisConstructor("create(0, 0)")
                 }
 
-                addConstructor {
+                builder.addConstructor {
                     addParameters(getCoordParameters(point))
 
                     callThisConstructor {
@@ -138,12 +139,12 @@ class PointGenerator(processingEnv: ProcessingEnvironment) {
                     }
                 }
 
-                addConstructor {
+                builder.addConstructor {
                     addParameter("factors", numberArray)
                     callThisConstructor("createA(factors)")
                 }
 
-                addConstructor {
+                builder.addConstructor {
                     addParameter("pt", clsName)
                     callThisConstructor("createC(pt)")
                 }
@@ -154,7 +155,7 @@ class PointGenerator(processingEnv: ProcessingEnvironment) {
                     addParameter("i", Int::class)
                     returns(number)
 
-                    addStatement("return getCoord(i)")
+                    + "return getCoord(i)"
                 }
 
                 addFunction("set") {
@@ -162,29 +163,21 @@ class PointGenerator(processingEnv: ProcessingEnvironment) {
                     addParameter("i", Int::class)
                     addParameter("v", number)
 
-                    addStatement("return setCoord(i, v)")
+                    + "return setCoord(i, v)"
                 }
 
                 addFunction("unaryPlus") {
                     addModifiers(KModifier.OVERRIDE, KModifier.OPERATOR)
                     returns(clsName)
 
-                    addCode {
-                        add("return ${clsName.simpleName}(")
-                        add((0 until point.deg).map { "+this[$it]" }.joinToString(", "))
-                        add(")")
-                    }
+                    + ("return ${clsName.simpleName}(this)")
                 }
 
                 addFunction("unaryMinus") {
                     addModifiers(KModifier.OVERRIDE, KModifier.OPERATOR)
                     returns(clsName)
 
-                    addCode {
-                        add("return ${clsName.simpleName}(")
-                        add((0 until point.deg).map { "-this[$it]" }.joinToString(", "))
-                        add(")")
-                    }
+                    + ("return ${clsName.simpleName}(" + (0 until point.deg).joinToString(", ") { "-this[$it]" } + ")")
                 }
 
                 addFunction("plusAssign") {
@@ -192,7 +185,7 @@ class PointGenerator(processingEnv: ProcessingEnvironment) {
                     addParameter("v", getInterface(point, "Vector"))
 
                     for (i in 0 until point.deg) {
-                        addStatement("this[$i] += v[$i]")
+                        + "this[$i] += v[$i]"
                     }
                 }
 
@@ -201,7 +194,7 @@ class PointGenerator(processingEnv: ProcessingEnvironment) {
                     addParameter("v", getInterface(point, "Vector"))
 
                     for (i in 0 until point.deg) {
-                        addStatement("this[$i] -= v[$i]")
+                        + "this[$i] -= v[$i]"
                     }
                 }
 
@@ -210,11 +203,7 @@ class PointGenerator(processingEnv: ProcessingEnvironment) {
                     addParameter("v", getInterface(point, "Vector"))
                     returns(clsName)
 
-                    addCode {
-                        add("return ${clsName.simpleName}(")
-                        add((0 until point.deg).map { "this[$it] + v[$it]" }.joinToString(", "))
-                        add(")")
-                    }
+                    + ("return ${clsName.simpleName}(" + (0 until point.deg).joinToString(", ") { "this[$it] + v[$it]" } + ")")
                 }
 
                 addFunction("minus") {
@@ -222,11 +211,7 @@ class PointGenerator(processingEnv: ProcessingEnvironment) {
                     addParameter("v", getInterface(point, "Vector"))
                     returns(clsName)
 
-                    addCode {
-                        add("return ${clsName.simpleName}(")
-                        add((0 until point.deg).map { "this[$it] - v[$it]" }.joinToString(", "))
-                        add(")")
-                    }
+                    + ("return ${clsName.simpleName}(" + (0 until point.deg).joinToString(", ") { "this[$it] - v[$it]" } + ")")
                 }
 
                 addFunction("minus") {
@@ -234,11 +219,7 @@ class PointGenerator(processingEnv: ProcessingEnvironment) {
                     addParameter("pt", getInterface(point, "Point"))
                     returns(ClassName(pkg, getName(point, "Vec")))
 
-                    addCode {
-                        add("return ${getName(point, "Vec")}(")
-                        add((0 until point.deg).map { "this[$it] - pt[$it]" }.joinToString(", "))
-                        add(")")
-                    }
+                    + ("return ${getName(point, "Vec")}(" + (0 until point.deg).joinToString(", ") { "this[$it] - pt[$it]" } + ")")
                 }
 
                 addFunction("times") {
@@ -246,10 +227,7 @@ class PointGenerator(processingEnv: ProcessingEnvironment) {
                     addParameter("c", getInterface(point, "Coord"))
                     returns(number)
 
-                    addCode {
-                        add("return ")
-                        add((0 until point.deg).map { "(this[$it] * c[$it])" }.joinToString(" + "))
-                    }
+                    + ("return " + (0 until point.deg).joinToString(" + ") { "(this[$it] * c[$it])" })
                 }
 
                 // Méthodes
@@ -258,32 +236,24 @@ class PointGenerator(processingEnv: ProcessingEnvironment) {
                     addParameter("other", Any::class.asTypeName().copy(nullable = true))
                     returns(Boolean::class)
 
-                    addCode {
-                        add("""
-                            if (other === this) return true
-                            if (other is ${clsName.simpleName}) return equal(other)
-
-                            return super.equals(other)
-                        """.trimIndent())
-                    }
+                    + "if (other === this) return true"
+                    + "if (other is ${clsName.simpleName}) return equal(other)"
+                    + ""
+                    + "return super.equals(other)"
                 }
 
                 addFunction("hashCode") {
                     addModifiers(KModifier.OVERRIDE)
                     returns(Int::class)
 
-                    addStatement("return data.contentHashCode()")
+                    + "return data.contentHashCode()"
                 }
 
                 addFunction("toString") {
                     addModifiers(KModifier.OVERRIDE)
                     returns(String::class)
 
-                    addCode {
-                        add("return \"Point(")
-                        add((0 until point.deg).map { "\${this[$it]}" }.joinToString(", "))
-                        add(")\"")
-                    }
+                    + ("return \"Point(" + (0 until point.deg).joinToString(", ") { "\${this[$it]}" } + ")\"")
                 }
 
                 // Méthodes natives
@@ -312,6 +282,6 @@ class PointGenerator(processingEnv: ProcessingEnvironment) {
             }
         }
 
-        utils.writeTo(utils.sourceDir, code)
+        utils.writeTo(utils.sourceDir, code.spec)
     }
 }
