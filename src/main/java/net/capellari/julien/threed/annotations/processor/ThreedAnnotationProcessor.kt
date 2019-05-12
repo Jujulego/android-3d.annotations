@@ -1,29 +1,30 @@
 package net.capellari.julien.threed.annotations.processor
 
+import com.google.auto.service.AutoService
 import net.capellari.julien.threed.annotations.Program
-import javax.annotation.processing.AbstractProcessor
-import javax.annotation.processing.RoundEnvironment
-import javax.annotation.processing.SupportedOptions
-import javax.annotation.processing.SupportedSourceVersion
+import net.capellari.julien.threed.annotations.math.PointClass
+import javax.annotation.processing.*
 import javax.lang.model.SourceVersion
 import javax.lang.model.element.TypeElement
 
-@SupportedSourceVersion(SourceVersion.RELEASE_7)
-@SupportedOptions(ThreedAnnotationProcessor.KAPT_KOTLIN_GENERATED_OPTION_NAME)
+@AutoService(Processor::class)
+@SupportedSourceVersion(SourceVersion.RELEASE_8)
+@SupportedOptions(Utils.KAPT_KOTLIN_GENERATED_OPTION_NAME)
 class ThreedAnnotationProcessor : AbstractProcessor() {
-    // Companion
-    companion object {
-        const val KAPT_KOTLIN_GENERATED_OPTION_NAME = "kapt.kotlin.generated"
-    }
-
     // Méthodes
     override fun getSupportedAnnotationTypes(): MutableSet<String> {
         return mutableSetOf(
-            Program::class.java.canonicalName
+            canonicalName<Program>(),
+
+            // math
+            canonicalName<PointClass>()
         )
     }
 
-    override fun process(annotated: MutableSet<out TypeElement>?, env: RoundEnvironment?): Boolean {
+    override fun process(annotated: MutableSet<out TypeElement>, env: RoundEnvironment): Boolean {
+        env.getElementsAnnotatedWith<PointClass>()
+            .forEach(PointGenerator(processingEnv)::invoke)
+
         return false
     }
 }

@@ -1,4 +1,6 @@
 package net.capellari.julien.threed.annotations
 
 @Target(AnnotationTarget.CLASS)
-annotation class Program
+annotation class Program(
+    val shaders: Array<ShaderScript>
+)
