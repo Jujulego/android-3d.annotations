@@ -6,12 +6,14 @@ import com.squareup.kotlinpoet.KModifier
 import net.capellari.julien.threed.annotations.kotlinwriter.Code
 import net.capellari.julien.threed.annotations.kotlinwriter.KotlinMarker
 import net.capellari.julien.threed.annotations.kotlinwriter.interfaces.Annotable
+import net.capellari.julien.threed.annotations.kotlinwriter.interfaces.Modifiable
 import kotlin.reflect.KClass
 
 @KotlinMarker
 abstract class AbsFunction(builder: FunSpec.Builder):
         AbsWrapper<FunSpec,FunSpec.Builder>(builder),
-        Annotable<FunSpec,FunSpec.Builder> {
+        Annotable<FunSpec,FunSpec.Builder>,
+        Modifiable<FunSpec, FunSpec.Builder> {
 
     // Propriétés
     override val spec get() = builder.build()
@@ -24,7 +26,7 @@ abstract class AbsFunction(builder: FunSpec.Builder):
         builder.addAnnotation(type)
     }
 
-    fun modifiers(vararg modifiers: KModifier) {
+    override fun modifiers(vararg modifiers: KModifier) {
         builder.addModifiers(*modifiers)
     }
 

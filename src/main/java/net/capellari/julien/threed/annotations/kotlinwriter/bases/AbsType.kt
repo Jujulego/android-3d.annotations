@@ -1,20 +1,19 @@
 package net.capellari.julien.threed.annotations.kotlinwriter.bases
 
-import com.squareup.kotlinpoet.ClassName
-import com.squareup.kotlinpoet.PropertySpec
-import com.squareup.kotlinpoet.TypeName
-import com.squareup.kotlinpoet.TypeSpec
+import com.squareup.kotlinpoet.*
 import net.capellari.julien.threed.annotations.kotlinwriter.Code
 import net.capellari.julien.threed.annotations.kotlinwriter.Function
 import net.capellari.julien.threed.annotations.kotlinwriter.KotlinMarker
 import net.capellari.julien.threed.annotations.kotlinwriter.Property
 import net.capellari.julien.threed.annotations.kotlinwriter.interfaces.Annotable
+import net.capellari.julien.threed.annotations.kotlinwriter.interfaces.Modifiable
 import kotlin.reflect.KClass
 
 @KotlinMarker
 abstract class AbsType(builder: TypeSpec.Builder):
         AbsWrapper<TypeSpec,TypeSpec.Builder>(builder),
-        Annotable<TypeSpec, TypeSpec.Builder> {
+        Annotable<TypeSpec, TypeSpec.Builder>,
+        Modifiable<TypeSpec, TypeSpec.Builder> {
 
     // Propriétés
     override val spec get() = builder.build()
@@ -26,6 +25,11 @@ abstract class AbsType(builder: TypeSpec.Builder):
     }
     override fun annotation(type: KClass<*>) {
         builder.addAnnotation(type)
+    }
+
+    // - modifiers
+    override fun modifiers(vararg modifiers: KModifier) {
+        builder.addModifiers(*modifiers)
     }
 
     // - superclass

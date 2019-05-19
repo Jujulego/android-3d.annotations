@@ -4,6 +4,7 @@ import com.squareup.kotlinpoet.*
 import net.capellari.julien.threed.annotations.kotlinwriter.bases.AbsFunction
 import net.capellari.julien.threed.annotations.kotlinwriter.bases.AbsWrapper
 import net.capellari.julien.threed.annotations.kotlinwriter.interfaces.Annotable
+import net.capellari.julien.threed.annotations.kotlinwriter.interfaces.Modifiable
 import net.capellari.julien.threed.annotations.kotlinwriter.interfaces.Parameters
 import net.capellari.julien.threed.annotations.kotlinwriter.interfaces.Returns
 import kotlin.reflect.KClass
@@ -11,7 +12,8 @@ import kotlin.reflect.KClass
 @KotlinMarker
 class Property:
         AbsWrapper<PropertySpec,PropertySpec.Builder>,
-        Annotable<PropertySpec, PropertySpec.Builder> {
+        Annotable<PropertySpec, PropertySpec.Builder>,
+        Modifiable<PropertySpec, PropertySpec.Builder> {
 
     // Propriétés
     override val spec get() = builder.build()
@@ -21,6 +23,7 @@ class Property:
     constructor(name: String, type: KClass<*>): super(PropertySpec.builder(name, type))
 
     // Méthodes
+    // - annotations
     override fun annotation(type: ClassName) {
         builder.addAnnotation(type)
     }
@@ -28,10 +31,12 @@ class Property:
         builder.addAnnotation(type)
     }
 
-    fun addModifiers(vararg modifiers: KModifier) {
+    // - modifiers
+    override fun modifiers(vararg modifiers: KModifier) {
         builder.addModifiers(*modifiers)
     }
 
+    // - accesseurs
     fun getter(build: Getter.() -> Unit) {
         builder.getter(Getter().apply(build).spec)
     }

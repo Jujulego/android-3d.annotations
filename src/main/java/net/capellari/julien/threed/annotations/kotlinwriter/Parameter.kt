@@ -1,16 +1,19 @@
 package net.capellari.julien.threed.annotations.kotlinwriter
 
 import com.squareup.kotlinpoet.ClassName
+import com.squareup.kotlinpoet.KModifier
 import com.squareup.kotlinpoet.TypeName
 import com.squareup.kotlinpoet.ParameterSpec
 import net.capellari.julien.threed.annotations.kotlinwriter.bases.AbsWrapper
 import net.capellari.julien.threed.annotations.kotlinwriter.interfaces.Annotable
+import net.capellari.julien.threed.annotations.kotlinwriter.interfaces.Modifiable
 import kotlin.reflect.KClass
 
 @KotlinMarker
 class Parameter:
         AbsWrapper<ParameterSpec,ParameterSpec.Builder>,
-        Annotable<ParameterSpec,ParameterSpec.Builder> {
+        Annotable<ParameterSpec,ParameterSpec.Builder>,
+        Modifiable<ParameterSpec,ParameterSpec.Builder> {
 
     // Propriétés
     override val spec get() = builder.build()
@@ -20,10 +23,16 @@ class Parameter:
     constructor(name: String, type: KClass<*>): super(ParameterSpec.builder(name, type))
 
     // Méthodes
+    // - annotations
     override fun annotation(type: ClassName) {
         builder.addAnnotation(type)
     }
     override fun annotation(type: KClass<*>) {
         builder.addAnnotation(type)
+    }
+
+    // - modifiers
+    override fun modifiers(vararg modifiers: KModifier) {
+        builder.addModifiers(*modifiers)
     }
 }

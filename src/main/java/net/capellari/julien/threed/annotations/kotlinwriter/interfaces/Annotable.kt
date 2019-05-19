@@ -4,6 +4,7 @@ import com.squareup.kotlinpoet.ClassName
 import kotlin.reflect.KClass
 
 interface Annotable<out S, out B> : Wrapper<S,B> {
+    // Méthodes
     fun annotation(type: ClassName)
     fun annotation(type: KClass<*>)
 }
