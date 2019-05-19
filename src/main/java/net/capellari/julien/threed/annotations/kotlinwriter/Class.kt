@@ -2,8 +2,9 @@ package net.capellari.julien.threed.annotations.kotlinwriter
 
 import com.squareup.kotlinpoet.ClassName
 import com.squareup.kotlinpoet.TypeSpec
+import net.capellari.julien.threed.annotations.kotlinwriter.bases.AbsType
 
-class Class: Type {
+class Class: AbsType {
     // Constructors
     constructor(name: ClassName): super(TypeSpec.classBuilder(name))
     constructor(name: String): super(TypeSpec.classBuilder(name))
@@ -16,4 +17,11 @@ class Class: Type {
     fun addConstructor(build: Constructor.() -> Unit) {
         builder.addFunction(Constructor().apply(build).spec)
     }
+
+    fun companion(name: String? = null, build: Companion.() -> Unit) {
+        builder.addType(Companion(name).apply(build).spec)
+    }
+
+    // Classe
+    class Companion(name: String? = null): AbsType(TypeSpec.companionObjectBuilder(name))
 }

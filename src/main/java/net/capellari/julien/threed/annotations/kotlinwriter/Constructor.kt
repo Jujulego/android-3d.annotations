@@ -1,21 +1,11 @@
 package net.capellari.julien.threed.annotations.kotlinwriter
 
 import com.squareup.kotlinpoet.FunSpec
-import com.squareup.kotlinpoet.TypeName
-import kotlin.reflect.KClass
+import net.capellari.julien.threed.annotations.kotlinwriter.bases.AbsFunction
+import net.capellari.julien.threed.annotations.kotlinwriter.interfaces.Parameters
 
-class Constructor : _Function(FunSpec.constructorBuilder()) {
+class Constructor : AbsFunction(FunSpec.constructorBuilder()), Parameters {
     // Méthodes
-    fun addParameter(name: String, type: TypeName) {
-        builder.addParameter(name, type)
-    }
-    fun addParameter(name: String, type: KClass<*>) {
-        builder.addParameter(name, type)
-    }
-    fun addParameter(name: String, type: java.lang.reflect.Type) {
-        builder.addParameter(name, type)
-    }
-
     fun callThis(vararg code: String) {
         builder.callThisConstructor(*code)
     }

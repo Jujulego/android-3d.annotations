@@ -1,12 +1,16 @@
-package net.capellari.julien.threed.annotations.kotlinwriter
+package net.capellari.julien.threed.annotations.kotlinwriter.bases
 
 import com.squareup.kotlinpoet.ClassName
 import com.squareup.kotlinpoet.TypeName
 import com.squareup.kotlinpoet.TypeSpec
+import net.capellari.julien.threed.annotations.kotlinwriter.Code
+import net.capellari.julien.threed.annotations.kotlinwriter.Function
+import net.capellari.julien.threed.annotations.kotlinwriter.KotlinMarker
+import net.capellari.julien.threed.annotations.kotlinwriter.Property
 import kotlin.reflect.KClass
 
 @KotlinMarker
-open class Type(val builder: TypeSpec.Builder) {
+abstract class AbsType(val builder: TypeSpec.Builder) {
     // Propriétés
     val spec get() = builder.build()
 
@@ -38,11 +42,9 @@ open class Type(val builder: TypeSpec.Builder) {
     fun addProperty(name: String, type: TypeName, build: Property.() -> Unit) {
         builder.addProperty(Property(name, type).apply(build).spec)
     }
-
     fun addProperty(name: String, type: KClass<*>, build: Property.() -> Unit) {
         builder.addProperty(Property(name, type).apply(build).spec)
     }
-
     fun addProperty(name: String, type: java.lang.reflect.Type, build: Property.() -> Unit) {
         builder.addProperty(Property(name, type).apply(build).spec)
     }

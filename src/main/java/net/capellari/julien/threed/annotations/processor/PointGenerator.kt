@@ -3,7 +3,9 @@ package net.capellari.julien.threed.annotations.processor
 import androidx.annotation.RequiresApi
 import com.squareup.kotlinpoet.*
 import com.squareup.kotlinpoet.ParameterizedTypeName.Companion.parameterizedBy
+import net.capellari.julien.threed.annotations.kotlinwriter.addParameter
 import net.capellari.julien.threed.annotations.kotlinwriter.createFile
+import net.capellari.julien.threed.annotations.kotlinwriter.returns
 import net.capellari.julien.threed.annotations.math.NumberType
 import net.capellari.julien.threed.annotations.math.PointClass
 import javax.annotation.processing.ProcessingEnvironment
@@ -89,33 +91,36 @@ class PointGenerator(processingEnv: ProcessingEnvironment) {
                 addSuperinterface(getInterface(point, "Point"))
 
                 // Companion
-                builder.addCompanion {
+                companion {
                     addFunction("create") {
-                        addAnnotation(JvmStatic::class)
+                        addAnnotation<JvmStatic>()
                         addModifiers(KModifier.PRIVATE, KModifier.EXTERNAL)
-                        addParameters(getCoordParameters(point))
-                        returns(Long::class)
+
+                        builder.addParameters(getCoordParameters(point))
+                        returns<Long>()
                     }
 
                     addFunction("createA") {
-                        addAnnotation(JvmStatic::class)
+                        addAnnotation<JvmStatic>()
                         addModifiers(KModifier.PRIVATE, KModifier.EXTERNAL)
+
                         addParameter("factors", numberArray)
-                        returns(Long::class)
+                        returns<Long>()
                     }
 
                     addFunction("createC") {
-                        addAnnotation(JvmStatic::class)
+                        addAnnotation<JvmStatic>()
                         addModifiers(KModifier.PRIVATE, KModifier.EXTERNAL)
+
                         addParameter("pt", clsName)
-                        returns(Long::class)
+                        returns<Long>()
                     }
                 }
 
                 // Propriétés
                 addProperty("data", numberArray) {
-                    builder.getter {
-                        addStatement("return getDataA()")
+                    getter {
+                        + "return getDataA()"
                     }
                 }
 
@@ -229,8 +234,8 @@ class PointGenerator(processingEnv: ProcessingEnvironment) {
                 // Méthodes
                 addFunction("equals") {
                     addModifiers(KModifier.OVERRIDE)
-                    addParameter("other", Any::class.asTypeName().copy(nullable = true))
-                    returns(Boolean::class)
+                    addParameter<Any>("other", nullable = true)
+                    returns<Boolean>()
 
                     + "if (other === this) return true"
                     + "if (other is ${clsName.simpleName}) return equal(other)"
@@ -240,14 +245,14 @@ class PointGenerator(processingEnv: ProcessingEnvironment) {
 
                 addFunction("hashCode") {
                     addModifiers(KModifier.OVERRIDE)
-                    returns(Int::class)
+                    returns<Int>()
 
                     + "return data.contentHashCode()"
                 }
 
                 addFunction("toString") {
                     addModifiers(KModifier.OVERRIDE)
-                    returns(String::class)
+                    returns<String>()
 
                     + ("return \"Point(" + (0 until point.deg).joinToString(", ") { "\${this[$it]}" } + ")\"")
                 }
@@ -260,20 +265,20 @@ class PointGenerator(processingEnv: ProcessingEnvironment) {
 
                 addFunction("getCoord") {
                     addModifiers(KModifier.PRIVATE, KModifier.EXTERNAL)
-                    addParameter("i", Int::class)
+                    addParameter<Int>("i")
                     returns(number)
                 }
 
                 addFunction("setCoord") {
                     addModifiers(KModifier.PRIVATE, KModifier.EXTERNAL)
-                    addParameter("i", Int::class)
+                    addParameter<Int>("i")
                     addParameter("v", number)
                 }
 
                 addFunction("equal") {
                     addModifiers(KModifier.PRIVATE, KModifier.EXTERNAL)
                     addParameter("other", clsName)
-                    returns(Boolean::class)
+                    returns<Boolean>()
                 }
             }
         }
