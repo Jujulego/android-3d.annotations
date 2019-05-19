@@ -113,40 +113,36 @@ class PointGenerator(processingEnv: ProcessingEnvironment) {
                 }
 
                 // Propriétés
-                builder.addProperty("data", numberArray) {
-                    getter {
+                addProperty("data", numberArray) {
+                    builder.getter {
                         addStatement("return getDataA()")
                     }
                 }
 
                 // Constructeurs
-                builder.addPrimaryConstructor {
+                primaryConstructor {
                     addModifiers(KModifier.INTERNAL)
                     addParameter("handle", Long::class)
                 }
 
-                builder.addConstructor {
-                    callThisConstructor("create(0, 0)")
+                addConstructor {
+                    callThis("create(0, 0)")
                 }
 
-                builder.addConstructor {
-                    addParameters(getCoordParameters(point))
+                addConstructor {
+                    builder.addParameters(getCoordParameters(point))
 
-                    callThisConstructor {
-                        add("create(")
-                        add((0 until point.deg).map { "v$it" }.joinToString(", "))
-                        add(")")
-                    }
+                    callThis("create(" + (0 until point.deg).map { "v$it" }.joinToString(", ") + ")")
                 }
 
-                builder.addConstructor {
+                addConstructor {
                     addParameter("factors", numberArray)
-                    callThisConstructor("createA(factors)")
+                    callThis("createA(factors)")
                 }
 
-                builder.addConstructor {
+                addConstructor {
                     addParameter("pt", clsName)
-                    callThisConstructor("createC(pt)")
+                    callThis("createC(pt)")
                 }
 
                 // Opérateurs
@@ -170,7 +166,7 @@ class PointGenerator(processingEnv: ProcessingEnvironment) {
                     addModifiers(KModifier.OVERRIDE, KModifier.OPERATOR)
                     returns(clsName)
 
-                    + ("return ${clsName.simpleName}(this)")
+                    + "return ${clsName.simpleName}(this)"
                 }
 
                 addFunction("unaryMinus") {

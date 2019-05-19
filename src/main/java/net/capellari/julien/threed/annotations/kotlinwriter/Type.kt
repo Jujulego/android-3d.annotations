@@ -33,4 +33,17 @@ open class Type(val builder: TypeSpec.Builder) {
     fun addFunction(name: String, build: Function.() -> Unit) {
         builder.addFunction(Function(name).apply(build).spec)
     }
+
+    // - propriétés
+    fun addProperty(name: String, type: TypeName, build: Property.() -> Unit) {
+        builder.addProperty(Property(name, type).apply(build).spec)
+    }
+
+    fun addProperty(name: String, type: KClass<*>, build: Property.() -> Unit) {
+        builder.addProperty(Property(name, type).apply(build).spec)
+    }
+
+    fun addProperty(name: String, type: java.lang.reflect.Type, build: Property.() -> Unit) {
+        builder.addProperty(Property(name, type).apply(build).spec)
+    }
 }

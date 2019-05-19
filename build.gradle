@@ -4,6 +4,10 @@ apply plugin: 'kotlin-kapt'
 sourceCompatibility = "7"
 targetCompatibility = "7"
 
+kapt {
+    generateStubs = true
+}
+
 dependencies {
     implementation fileTree(dir: 'libs', include: ['*.jar'])
 
