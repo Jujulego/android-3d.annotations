@@ -14,7 +14,7 @@ class Class: AbsType {
         builder.primaryConstructor(Constructor().apply(build).spec)
     }
 
-    fun addConstructor(build: Constructor.() -> Unit) {
+    fun constructor(build: Constructor.() -> Unit) {
         builder.addFunction(Constructor().apply(build).spec)
     }
 
@@ -23,5 +23,5 @@ class Class: AbsType {
     }
 
     // Classe
-    class Companion(name: String? = null): AbsType(TypeSpec.companionObjectBuilder(name))
+    class Companion(name: String? = null): Object(TypeSpec.companionObjectBuilder(name))
 }

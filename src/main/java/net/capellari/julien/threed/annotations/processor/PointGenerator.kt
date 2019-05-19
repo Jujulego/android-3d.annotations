@@ -3,10 +3,7 @@ package net.capellari.julien.threed.annotations.processor
 import androidx.annotation.RequiresApi
 import com.squareup.kotlinpoet.*
 import com.squareup.kotlinpoet.ParameterizedTypeName.Companion.parameterizedBy
-import net.capellari.julien.threed.annotations.kotlinwriter.Parameter
-import net.capellari.julien.threed.annotations.kotlinwriter.addParameter
-import net.capellari.julien.threed.annotations.kotlinwriter.createFile
-import net.capellari.julien.threed.annotations.kotlinwriter.returns
+import net.capellari.julien.threed.annotations.kotlinwriter.*
 import net.capellari.julien.threed.annotations.math.NumberType
 import net.capellari.julien.threed.annotations.math.PointClass
 import javax.annotation.processing.ProcessingEnvironment
@@ -85,41 +82,41 @@ class PointGenerator(processingEnv: ProcessingEnvironment) {
             addClass(clsName) {
                 // superclass
                 superclass("net.capellari.julien.threed.jni", "JNIClass")
-                addSuperclassParameter("handle")
+                superclassParameter("handle")
 
                 // interface
-                addSuperinterface(baseName)
-                addSuperinterface(getInterface(point, "Point"))
+                superinterface(baseName)
+                superinterface(getInterface(point, "Point"))
 
                 // Companion
                 companion {
-                    addFunction("create") {
-                        addAnnotation<JvmStatic>()
-                        addModifiers(KModifier.PRIVATE, KModifier.EXTERNAL)
+                    function("create") {
+                        annotation<JvmStatic>()
+                        modifiers(KModifier.PRIVATE, KModifier.EXTERNAL)
 
-                        addParameters(getCoordParameters(point))
+                        parameters(getCoordParameters(point))
                         returns<Long>()
                     }
 
-                    addFunction("createA") {
-                        addAnnotation<JvmStatic>()
-                        addModifiers(KModifier.PRIVATE, KModifier.EXTERNAL)
+                    function("createA") {
+                        annotation<JvmStatic>()
+                        modifiers(KModifier.PRIVATE, KModifier.EXTERNAL)
 
-                        addParameter("factors", numberArray)
+                        parameter("factors", numberArray)
                         returns<Long>()
                     }
 
-                    addFunction("createC") {
-                        addAnnotation<JvmStatic>()
-                        addModifiers(KModifier.PRIVATE, KModifier.EXTERNAL)
+                    function("createC") {
+                        annotation<JvmStatic>()
+                        modifiers(KModifier.PRIVATE, KModifier.EXTERNAL)
 
-                        addParameter("pt", clsName)
+                        parameter("pt", clsName)
                         returns<Long>()
                     }
                 }
 
                 // Propriétés
-                addProperty("data", numberArray) {
+                property("data", numberArray) {
                     getter {
                         + "return getDataA()"
                     }
@@ -127,115 +124,115 @@ class PointGenerator(processingEnv: ProcessingEnvironment) {
 
                 // Constructeurs
                 primaryConstructor {
-                    addModifiers(KModifier.INTERNAL)
-                    addParameter("handle", Long::class)
+                    modifiers(KModifier.INTERNAL)
+                    parameter<Long>("handle")
                 }
 
-                addConstructor {
+                constructor {
                     callThis("create(0, 0)")
                 }
 
-                addConstructor {
-                    addParameters(getCoordParameters(point))
+                constructor {
+                    parameters(getCoordParameters(point))
 
-                    callThis("create(" + (0 until point.deg).map { "v$it" }.joinToString(", ") + ")")
+                    callThis("create(" + (0 until point.deg).joinToString(", ") { "v$it" } + ")")
                 }
 
-                addConstructor {
-                    addParameter("factors", numberArray)
+                constructor {
+                    parameter("factors", numberArray)
                     callThis("createA(factors)")
                 }
 
-                addConstructor {
-                    addParameter("pt", clsName)
+                constructor {
+                    parameter("pt", clsName)
                     callThis("createC(pt)")
                 }
 
                 // Opérateurs
-                addFunction("get") {
-                    addModifiers(KModifier.OVERRIDE, KModifier.OPERATOR)
-                    addParameter<Int>("i")
+                function("get") {
+                    modifiers(KModifier.OVERRIDE, KModifier.OPERATOR)
+                    parameter<Int>("i")
                     returns(number)
 
                     + "return getCoord(i)"
                 }
 
-                addFunction("set") {
-                    addModifiers(KModifier.OVERRIDE, KModifier.OPERATOR)
-                    addParameter<Int>("i")
-                    addParameter("v", number)
+                function("set") {
+                    modifiers(KModifier.OVERRIDE, KModifier.OPERATOR)
+                    parameter<Int>("i")
+                    parameter("v", number)
 
                     + "return setCoord(i, v)"
                 }
 
-                addFunction("unaryPlus") {
-                    addModifiers(KModifier.OVERRIDE, KModifier.OPERATOR)
+                function("unaryPlus") {
+                    modifiers(KModifier.OVERRIDE, KModifier.OPERATOR)
                     returns(clsName)
 
                     + "return ${clsName.simpleName}(this)"
                 }
 
-                addFunction("unaryMinus") {
-                    addModifiers(KModifier.OVERRIDE, KModifier.OPERATOR)
+                function("unaryMinus") {
+                    modifiers(KModifier.OVERRIDE, KModifier.OPERATOR)
                     returns(clsName)
 
                     + ("return ${clsName.simpleName}(" + (0 until point.deg).joinToString(", ") { "-this[$it]" } + ")")
                 }
 
-                addFunction("plusAssign") {
-                    addModifiers(KModifier.OVERRIDE, KModifier.OPERATOR)
-                    addParameter("v", getInterface(point, "Vector"))
+                function("plusAssign") {
+                    modifiers(KModifier.OVERRIDE, KModifier.OPERATOR)
+                    parameter("v", getInterface(point, "Vector"))
 
                     for (i in 0 until point.deg) {
                         + "this[$i] += v[$i]"
                     }
                 }
 
-                addFunction("minusAssign") {
-                    addModifiers(KModifier.OVERRIDE, KModifier.OPERATOR)
-                    addParameter("v", getInterface(point, "Vector"))
+                function("minusAssign") {
+                    modifiers(KModifier.OVERRIDE, KModifier.OPERATOR)
+                    parameter("v", getInterface(point, "Vector"))
 
                     for (i in 0 until point.deg) {
                         + "this[$i] -= v[$i]"
                     }
                 }
 
-                addFunction("plus") {
-                    addModifiers(KModifier.OVERRIDE, KModifier.OPERATOR)
-                    addParameter("v", getInterface(point, "Vector"))
+                function("plus") {
+                    modifiers(KModifier.OVERRIDE, KModifier.OPERATOR)
+                    parameter("v", getInterface(point, "Vector"))
                     returns(clsName)
 
                     + ("return ${clsName.simpleName}(" + (0 until point.deg).joinToString(", ") { "this[$it] + v[$it]" } + ")")
                 }
 
-                addFunction("minus") {
-                    addModifiers(KModifier.OVERRIDE, KModifier.OPERATOR)
-                    addParameter("v", getInterface(point, "Vector"))
+                function("minus") {
+                    modifiers(KModifier.OVERRIDE, KModifier.OPERATOR)
+                    parameter("v", getInterface(point, "Vector"))
                     returns(clsName)
 
                     + ("return ${clsName.simpleName}(" + (0 until point.deg).joinToString(", ") { "this[$it] - v[$it]" } + ")")
                 }
 
-                addFunction("minus") {
-                    addModifiers(KModifier.OVERRIDE, KModifier.OPERATOR)
-                    addParameter("pt", getInterface(point, "Point"))
+                function("minus") {
+                    modifiers(KModifier.OVERRIDE, KModifier.OPERATOR)
+                    parameter("pt", getInterface(point, "Point"))
                     returns(ClassName(pkg, getName(point, "Vec")))
 
                     + ("return ${getName(point, "Vec")}(" + (0 until point.deg).joinToString(", ") { "this[$it] - pt[$it]" } + ")")
                 }
 
-                addFunction("times") {
-                    addModifiers(KModifier.OVERRIDE, KModifier.OPERATOR)
-                    addParameter("c", getInterface(point, "Coord"))
+                function("times") {
+                    modifiers(KModifier.OVERRIDE, KModifier.OPERATOR)
+                    parameter("c", getInterface(point, "Coord"))
                     returns(number)
 
                     + ("return " + (0 until point.deg).joinToString(" + ") { "(this[$it] * c[$it])" })
                 }
 
                 // Méthodes
-                addFunction("equals") {
-                    addModifiers(KModifier.OVERRIDE)
-                    addParameter<Any>("other", nullable = true)
+                function("equals") {
+                    modifiers(KModifier.OVERRIDE)
+                    parameter<Any>("other", nullable = true)
                     returns<Boolean>()
 
                     + "if (other === this) return true"
@@ -244,41 +241,41 @@ class PointGenerator(processingEnv: ProcessingEnvironment) {
                     + "return super.equals(other)"
                 }
 
-                addFunction("hashCode") {
-                    addModifiers(KModifier.OVERRIDE)
+                function("hashCode") {
+                    modifiers(KModifier.OVERRIDE)
                     returns<Int>()
 
                     + "return data.contentHashCode()"
                 }
 
-                addFunction("toString") {
-                    addModifiers(KModifier.OVERRIDE)
+                function("toString") {
+                    modifiers(KModifier.OVERRIDE)
                     returns<String>()
 
                     + ("return \"Point(" + (0 until point.deg).joinToString(", ") { "\${this[$it]}" } + ")\"")
                 }
 
                 // Méthodes natives
-                addFunction("getDataA") {
-                    addModifiers(KModifier.PRIVATE, KModifier.EXTERNAL)
+                function("getDataA") {
+                    modifiers(KModifier.PRIVATE, KModifier.EXTERNAL)
                     returns(numberArray)
                 }
 
-                addFunction("getCoord") {
-                    addModifiers(KModifier.PRIVATE, KModifier.EXTERNAL)
-                    addParameter<Int>("i")
+                function("getCoord") {
+                    modifiers(KModifier.PRIVATE, KModifier.EXTERNAL)
+                    parameter<Int>("i")
                     returns(number)
                 }
 
-                addFunction("setCoord") {
-                    addModifiers(KModifier.PRIVATE, KModifier.EXTERNAL)
-                    addParameter<Int>("i")
-                    addParameter("v", number)
+                function("setCoord") {
+                    modifiers(KModifier.PRIVATE, KModifier.EXTERNAL)
+                    parameter<Int>("i")
+                    parameter("v", number)
                 }
 
-                addFunction("equal") {
-                    addModifiers(KModifier.PRIVATE, KModifier.EXTERNAL)
-                    addParameter("other", clsName)
+                function("equal") {
+                    modifiers(KModifier.PRIVATE, KModifier.EXTERNAL)
+                    parameter("other", clsName)
                     returns<Boolean>()
                 }
             }

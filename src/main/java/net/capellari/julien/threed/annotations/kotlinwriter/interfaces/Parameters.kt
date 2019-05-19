@@ -7,14 +7,14 @@ import kotlin.reflect.KClass
 
 interface Parameters : Wrapper<FunSpec,FunSpec.Builder> {
     // Méthodes
-    fun addParameter(name: String, type: TypeName, build: Parameter.() -> Unit = {}) {
+    fun parameter(name: String, type: TypeName, build: Parameter.() -> Unit = {}) {
         builder.addParameter(Parameter(name, type).apply(build).spec)
     }
-    fun addParameter(name: String, type: KClass<*>, build: Parameter.() -> Unit = {}) {
+    fun parameter(name: String, type: KClass<*>, build: Parameter.() -> Unit = {}) {
         builder.addParameter(Parameter(name, type).apply(build).spec)
     }
 
-    fun addParameters(parameters: Iterable<Parameter>) {
+    fun parameters(parameters: Iterable<Parameter>) {
         builder.addParameters(parameters.map { it.spec })
     }
 }

@@ -1,36 +1,33 @@
 package net.capellari.julien.threed.annotations.kotlinwriter
 
-import com.squareup.kotlinpoet.FunSpec
-import com.squareup.kotlinpoet.KModifier
-import com.squareup.kotlinpoet.PropertySpec
-import com.squareup.kotlinpoet.TypeName
+import com.squareup.kotlinpoet.*
 import net.capellari.julien.threed.annotations.kotlinwriter.bases.AbsFunction
+import net.capellari.julien.threed.annotations.kotlinwriter.bases.AbsWrapper
+import net.capellari.julien.threed.annotations.kotlinwriter.interfaces.Annotable
 import net.capellari.julien.threed.annotations.kotlinwriter.interfaces.Parameters
 import net.capellari.julien.threed.annotations.kotlinwriter.interfaces.Returns
 import kotlin.reflect.KClass
 
 @KotlinMarker
-class Property {
-    // Attributs
-    val builder: PropertySpec.Builder
+class Property:
+        AbsWrapper<PropertySpec,PropertySpec.Builder>,
+        Annotable<PropertySpec, PropertySpec.Builder> {
 
     // Propriétés
-    val spec get() = builder.build()
+    override val spec get() = builder.build()
 
     // Constructeurs
-    constructor(name: String, type: TypeName) {
-        builder = PropertySpec.builder(name, type)
-    }
-
-    constructor(name: String, type: KClass<*>) {
-        builder = PropertySpec.builder(name, type)
-    }
-
-    constructor(name: String, type: java.lang.reflect.Type) {
-        builder = PropertySpec.builder(name, type)
-    }
+    constructor(name: String, type: TypeName): super(PropertySpec.builder(name, type))
+    constructor(name: String, type: KClass<*>): super(PropertySpec.builder(name, type))
 
     // Méthodes
+    override fun annotation(type: ClassName) {
+        builder.addAnnotation(type)
+    }
+    override fun annotation(type: KClass<*>) {
+        builder.addAnnotation(type)
+    }
+
     fun addModifiers(vararg modifiers: KModifier) {
         builder.addModifiers(*modifiers)
     }
