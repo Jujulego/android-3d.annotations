@@ -3,6 +3,7 @@ package net.capellari.julien.threed.annotations.processor
 import androidx.annotation.RequiresApi
 import com.squareup.kotlinpoet.*
 import com.squareup.kotlinpoet.ParameterizedTypeName.Companion.parameterizedBy
+import net.capellari.julien.threed.annotations.kotlinwriter.Parameter
 import net.capellari.julien.threed.annotations.kotlinwriter.addParameter
 import net.capellari.julien.threed.annotations.kotlinwriter.createFile
 import net.capellari.julien.threed.annotations.kotlinwriter.returns
@@ -48,12 +49,12 @@ class PointGenerator(processingEnv: ProcessingEnvironment) {
         }
     }
 
-    private fun getCoordParameters(point: PointClass): List<ParameterSpec> {
+    private fun getCoordParameters(point: PointClass): List<Parameter> {
         val type = getNumberType(point)
-        val params = mutableListOf<ParameterSpec>()
+        val params = mutableListOf<Parameter>()
 
         for (i in 0 until point.deg) {
-            params.add(ParameterSpec.builder("v$i", type).build())
+            params.add(Parameter("v$i", type))
         }
 
         return params
@@ -96,7 +97,7 @@ class PointGenerator(processingEnv: ProcessingEnvironment) {
                         addAnnotation<JvmStatic>()
                         addModifiers(KModifier.PRIVATE, KModifier.EXTERNAL)
 
-                        builder.addParameters(getCoordParameters(point))
+                        addParameters(getCoordParameters(point))
                         returns<Long>()
                     }
 
@@ -135,7 +136,7 @@ class PointGenerator(processingEnv: ProcessingEnvironment) {
                 }
 
                 addConstructor {
-                    builder.addParameters(getCoordParameters(point))
+                    addParameters(getCoordParameters(point))
 
                     callThis("create(" + (0 until point.deg).map { "v$it" }.joinToString(", ") + ")")
                 }
@@ -153,7 +154,7 @@ class PointGenerator(processingEnv: ProcessingEnvironment) {
                 // Opérateurs
                 addFunction("get") {
                     addModifiers(KModifier.OVERRIDE, KModifier.OPERATOR)
-                    addParameter("i", Int::class)
+                    addParameter<Int>("i")
                     returns(number)
 
                     + "return getCoord(i)"
@@ -161,7 +162,7 @@ class PointGenerator(processingEnv: ProcessingEnvironment) {
 
                 addFunction("set") {
                     addModifiers(KModifier.OVERRIDE, KModifier.OPERATOR)
-                    addParameter("i", Int::class)
+                    addParameter<Int>("i")
                     addParameter("v", number)
 
                     + "return setCoord(i, v)"
