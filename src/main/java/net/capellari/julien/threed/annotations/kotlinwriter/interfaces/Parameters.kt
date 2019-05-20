@@ -7,6 +7,7 @@ import kotlin.reflect.KClass
 
 interface Parameters : Wrapper<FunSpec,FunSpec.Builder> {
     // Méthodes
+    // - parameters
     fun parameter(name: String, type: TypeName, build: Parameter.() -> Unit = {}) {
         builder.addParameter(Parameter(name, type).apply(build).spec)
     }

@@ -235,9 +235,14 @@ class PointGenerator(processingEnv: ProcessingEnvironment) {
                     parameter<Any>("other", nullable = true)
                     returns<Boolean>()
 
-                    + "if (other === this) return true"
-                    + "if (other is ${clsName.simpleName}) return equal(other)"
-                    + ""
+                    flow("if (other === this)") {
+                        + "return true"
+                    }.end()
+
+                    flow("if (other is ${clsName.simpleName})") {
+                        + "return equal(other)"
+                    }.end()
+
                     + "return super.equals(other)"
                 }
 

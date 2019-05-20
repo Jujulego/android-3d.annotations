@@ -29,5 +29,8 @@ inline fun <reified T: Any> AbsType.property(name: String, nullable: Boolean = f
 inline fun <reified T: Any> Parameters.parameter(name: String, nullable: Boolean = false, noinline build: Parameter.() -> Unit = {})
         = parameter(name, T::class.asNullableTypeName(nullable), build)
 
+inline fun <reified T: Any> Function.receiver(nullable: Boolean = false)
+        = receiver(T::class.asNullableTypeName(nullable))
+
 inline fun <reified T: Any> Returns.returns(nullable: Boolean = false)
         = returns(T::class.asNullableTypeName(nullable))

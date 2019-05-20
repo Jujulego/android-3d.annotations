@@ -35,4 +35,13 @@ class Parameter:
     override fun modifiers(vararg modifiers: KModifier) {
         builder.addModifiers(*modifiers)
     }
+
+    // - default value
+    fun default(format: String, vararg args: Any?) {
+        builder.defaultValue(format, *args)
+    }
+
+    fun default(build: Code.() -> Unit) {
+        builder.defaultValue(Code().apply(build).spec)
+    }
 }
