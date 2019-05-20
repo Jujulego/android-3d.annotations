@@ -26,6 +26,9 @@ inline fun <reified T: Any> AbsType.superinterface(nullable: Boolean = false)
 inline fun <reified T: Any> AbsType.property(name: String, nullable: Boolean = false, noinline build: Property.() -> Unit = {})
         = property(name, T::class.asNullableTypeName(nullable), build)
 
+inline fun <reified T: Any> Parameters.parameter(nullable: Boolean = false)
+        = parameter(T::class.asNullableTypeName(nullable))
+
 inline fun <reified T: Any> Parameters.parameter(name: String, nullable: Boolean = false, noinline build: Parameter.() -> Unit = {})
         = parameter(name, T::class.asNullableTypeName(nullable), build)
 

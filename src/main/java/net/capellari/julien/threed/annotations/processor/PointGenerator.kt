@@ -230,11 +230,7 @@ class PointGenerator(processingEnv: ProcessingEnvironment) {
                 }
 
                 // Méthodes
-                function("equals") {
-                    modifiers(KModifier.OVERRIDE)
-                    parameter<Any>("other", nullable = true)
-                    returns<Boolean>()
-
+                override(Any::equals) {
                     flow("if (other === this)") {
                         + "return true"
                     }.end()
@@ -246,17 +242,11 @@ class PointGenerator(processingEnv: ProcessingEnvironment) {
                     + "return super.equals(other)"
                 }
 
-                function("hashCode") {
-                    modifiers(KModifier.OVERRIDE)
-                    returns<Int>()
-
+                override(Any::hashCode) {
                     + "return data.contentHashCode()"
                 }
 
-                function("toString") {
-                    modifiers(KModifier.OVERRIDE)
-                    returns<String>()
-
+                override(Any::toString) {
                     + ("return \"Point(" + (0 until point.deg).joinToString(", ") { "\${this[$it]}" } + ")\"")
                 }
 

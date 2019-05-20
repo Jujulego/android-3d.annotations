@@ -8,6 +8,10 @@ import net.capellari.julien.threed.annotations.kotlinwriter.Property
 import net.capellari.julien.threed.annotations.kotlinwriter.interfaces.Annotable
 import net.capellari.julien.threed.annotations.kotlinwriter.interfaces.Modifiable
 import kotlin.reflect.KClass
+import kotlin.reflect.KFunction
+import kotlin.reflect.full.extensionReceiverParameter
+import kotlin.reflect.full.instanceParameter
+import kotlin.reflect.full.valueParameters
 
 @KotlinMarker
 abstract class AbsType(builder: TypeSpec.Builder):
@@ -51,6 +55,36 @@ abstract class AbsType(builder: TypeSpec.Builder):
     // - fonctions
     fun function(name: String, build: Function.() -> Unit)
             = Function(name).apply(build).spec.also { builder.addFunction(it) }
+
+    fun <R> override(func: KFunction<R>, build: Function.() -> Unit)
+            = function(func.name) {
+                modifiers(KModifier.OVERRIDE)
+                if (func.isInfix) modifiers(KModifier.INFIX)
+
+                val extParam = func.extensionReceiverParameter
+                val thisParam = func.instanceParameter
+
+                if (extParam != null) {
+                    receiver(extParam.type.asTypeName())
+                }
+
+                func.valueParameters.forEach {
+                    val name = it.name
+                    val type = it.type.asTypeName()
+
+                    if (name == null) {
+                        parameter(type)
+                    } else {
+                        parameter(name, type) {
+                            if (it.isVararg) modifiers(KModifier.VARARG)
+                        }
+                    }
+                }
+
+                returns(func.returnType.asTypeName())
+
+                this.build()
+            }
 
     // - propriétés
     fun property(name: String, type: TypeName, build: Property.() -> Unit = {})
