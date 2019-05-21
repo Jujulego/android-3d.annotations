@@ -18,6 +18,7 @@ inline fun <reified A: Annotation> Annotable<*,*>.annotation() = annotation(A::c
 
 inline fun <reified T: Any> AbsType.superclass() = superclass(T::class)
 inline fun <reified T: Any> AbsType.superinterface() = superinterface(T::class)
+inline fun <reified T: Any> AbsType.superinterface(delegate: String, vararg args: Any) = superinterface(T::class, delegate, *args)
 
 inline fun <reified T: Any> AbsType.property(name: String, nullable: Boolean = false, noinline build: Property.() -> Unit = {})
         = property(name, T::class.asNullableTypeName(nullable), build)

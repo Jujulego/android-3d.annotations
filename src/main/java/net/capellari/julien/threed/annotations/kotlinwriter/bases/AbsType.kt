@@ -52,6 +52,15 @@ abstract class AbsType(builder: TypeSpec.Builder):
     fun superinterface(type: KClass<*>) { builder.addSuperinterface(type) }
     fun superinterface(pkg: String, name: String) = superinterface(ClassName(pkg, name))
 
+    fun superinterface(type: TypeName, delegate: String, vararg args: Any) {
+        val code = CodeBlock.builder().add(delegate, *args).build()
+        builder.addSuperinterface(type, delegate)
+    }
+    fun superinterface(type: KClass<*>, delegate: String, vararg args: Any) {
+        val code = CodeBlock.builder().add(delegate, *args).build()
+        builder.addSuperinterface(type, delegate)
+    }
+
     // - fonctions
     fun function(name: String, build: Function.() -> Unit)
             = Function(name).apply(build).spec.also { builder.addFunction(it) }
