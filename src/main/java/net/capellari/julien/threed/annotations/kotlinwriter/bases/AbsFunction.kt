@@ -35,6 +35,11 @@ abstract class AbsFunction(builder: FunSpec.Builder):
         builder.addModifiers(*modifiers)
     }
 
+    // - comments
+    override fun comment(format: String, vararg args: Any) {
+        builder.addComment(format, *args)
+    }
+
     // - code
     fun code(build: Code.() -> Unit) {
         builder.addCode(Code().apply(build).spec)

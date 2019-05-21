@@ -14,14 +14,10 @@ fun createFile(pkg: String, name: String, build: File.() -> Unit) = File(pkg, na
 fun<T: Any> KClass<T>.asNullableTypeName(nullable: Boolean = true)
         = asTypeName().copy(nullable = nullable)
 
-inline fun <reified A: Annotation> Annotable<*,*>.annotation()
-        = annotation(A::class)
+inline fun <reified A: Annotation> Annotable<*,*>.annotation() = annotation(A::class)
 
-inline fun <reified T: Any> AbsType.superclass(nullable: Boolean = false)
-        = superclass(T::class.asNullableTypeName(nullable))
-
-inline fun <reified T: Any> AbsType.superinterface(nullable: Boolean = false)
-        = superinterface(T::class.asNullableTypeName(nullable))
+inline fun <reified T: Any> AbsType.superclass() = superclass(T::class)
+inline fun <reified T: Any> AbsType.superinterface() = superinterface(T::class)
 
 inline fun <reified T: Any> AbsType.property(name: String, nullable: Boolean = false, noinline build: Property.() -> Unit = {})
         = property(name, T::class.asNullableTypeName(nullable), build)

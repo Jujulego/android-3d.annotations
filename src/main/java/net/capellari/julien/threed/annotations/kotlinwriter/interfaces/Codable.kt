@@ -12,6 +12,9 @@ interface Codable<out S, out B, T: Codable<S, B, T>>: Wrapper<S,B> {
     // - code
     fun format(format: String, vararg args: Any)
 
+    // - comment
+    fun comment(format: String, vararg args: Any)
+
     // - internal
     fun beginFlow(format: String, vararg args: Any)
     fun nextFlow(format: String, vararg args: Any)

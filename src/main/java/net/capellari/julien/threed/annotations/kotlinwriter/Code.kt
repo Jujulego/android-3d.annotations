@@ -13,6 +13,11 @@ class Code:
     override val spec get() = builder.build()
 
     // Méthodes
+    // - comments
+    override fun comment(format: String, vararg args: Any) {
+        builder.add("// $format", *args)
+    }
+
     // - code
     override fun format(format: String, vararg args: Any) {
         builder.addStatement(format, *args)
