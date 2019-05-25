@@ -1,17 +1,16 @@
 package net.capellari.julien.threed.annotations.kotlinwriter
 
-import com.squareup.kotlinpoet.ClassName
-import com.squareup.kotlinpoet.FileSpec
-import com.squareup.kotlinpoet.MemberName
-import com.squareup.kotlinpoet.asClassName
+import com.squareup.kotlinpoet.*
 import net.capellari.julien.threed.annotations.kotlinwriter.bases.AbsWrapper
 import net.capellari.julien.threed.annotations.kotlinwriter.interfaces.Annotable
+import net.capellari.julien.threed.annotations.kotlinwriter.interfaces.Commentable
 import kotlin.reflect.KClass
 
 @KotlinMarker
 class File(pkg: String, name: String):
         AbsWrapper<FileSpec,FileSpec.Builder>(FileSpec.builder(pkg, name)),
-        Annotable<FileSpec,FileSpec.Builder> {
+        Annotable<FileSpec,FileSpec.Builder>,
+        Commentable<FileSpec,FileSpec.Builder> {
 
     // Propriétés
     override val spec get() = builder.build()
@@ -23,6 +22,11 @@ class File(pkg: String, name: String):
     }
     override fun annotation(type: KClass<*>) {
         builder.addAnnotation(type)
+    }
+
+    // - comment
+    override fun comment(format: String, vararg args: Any) {
+        builder.addComment(format, *args)
     }
 
     // - imports
@@ -73,4 +77,17 @@ class File(pkg: String, name: String):
 
     fun addObject(name: String, build: Object.() -> Unit)
             = Object(name).apply(build).spec.also { builder.addType(it) }
+
+    fun addAlias(name: String, type: TypeName, build: TypeAlias.() -> Unit)
+            = TypeAlias(name, type).apply(build).spec.also { builder.addTypeAlias(it) }
+
+    fun addAlias(name: String, type: KClass<*>, build: TypeAlias.() -> Unit)
+            = TypeAlias(name, type).apply(build).spec.also { builder.addTypeAlias(it) }
+
+    // - propriétés
+    fun property(name: String, type: TypeName, build: Property.() -> Unit = {})
+            = Property(name, type).apply(build).spec.also { builder.addProperty(it) }
+
+    fun property(name: String, type: KClass<*>, build: Property.() -> Unit = {})
+            = Property(name, type).apply(build).spec.also { builder.addProperty(it) }
 }
