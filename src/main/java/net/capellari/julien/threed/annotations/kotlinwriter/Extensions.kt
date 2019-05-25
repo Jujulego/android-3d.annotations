@@ -16,6 +16,8 @@ fun<T: Any> KClass<T>.asNullableTypeName(nullable: Boolean = true)
 
 inline fun <reified A: Annotation> Annotable<*,*>.annotation() = annotation(A::class)
 
+inline fun <reified T: Any> File.import(alias: String? = null) = import(T::class, alias)
+
 inline fun <reified T: Any> AbsType.superclass() = superclass(T::class)
 inline fun <reified T: Any> AbsType.superinterface() = superinterface(T::class)
 inline fun <reified T: Any> AbsType.superinterface(delegate: String, vararg args: Any) = superinterface(T::class, delegate, *args)

@@ -8,8 +8,10 @@ class Class: AbsType {
     // Constructors
     constructor(name: ClassName): super(TypeSpec.classBuilder(name))
     constructor(name: String): super(TypeSpec.classBuilder(name))
+    constructor(): super(TypeSpec.anonymousClassBuilder())
 
     // Methods
+    // - constructors
     fun primaryConstructor(build: Constructor.() -> Unit) {
         builder.primaryConstructor(Constructor().apply(build).spec)
     }
@@ -20,6 +22,10 @@ class Class: AbsType {
 
     fun companion(name: String? = null, build: Companion.() -> Unit) {
         builder.addType(Companion(name).apply(build).spec)
+    }
+
+    fun init(build: Code.() -> Unit) {
+        builder.addInitializerBlock(Code().apply(build).spec)
     }
 
     // Classe
