@@ -4,7 +4,9 @@ import com.squareup.kotlinpoet.FunSpec
 import net.capellari.julien.threed.annotations.kotlinwriter.bases.AbsFunction
 import net.capellari.julien.threed.annotations.kotlinwriter.interfaces.Parameters
 
-class Constructor : AbsFunction(FunSpec.constructorBuilder()), Parameters {
+class Constructor : AbsFunction(FunSpec.constructorBuilder()),
+        Parameters {
+
     // Méthodes
     fun callThis(vararg code: String) {
         builder.callThisConstructor(*code)

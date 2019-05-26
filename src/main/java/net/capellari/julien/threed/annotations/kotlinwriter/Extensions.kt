@@ -14,7 +14,7 @@ fun createFile(pkg: String, name: String, build: File.() -> Unit) = File(pkg, na
 fun<T: Any> KClass<T>.asNullableTypeName(nullable: Boolean = true)
         = asTypeName().copy(nullable = nullable)
 
-inline fun <reified A: Annotation> Annotable<*,*>.annotation() = annotation(A::class)
+inline fun <reified A: Annotation> Annotable.annotation() = annotation(A::class)
 
 inline fun <reified T: Any> File.import(alias: String? = null) = import(T::class, alias)
 inline fun <reified T: Any> File.addAlias(name: String, noinline build: TypeAlias.() -> Unit) = addAlias(name, T::class, build)
@@ -25,6 +25,8 @@ inline fun <reified T: Any> AbsType.superinterface(delegate: String, vararg args
 
 inline fun <reified T: Any> AbsType.property(name: String, nullable: Boolean = false, noinline build: Property.() -> Unit = {})
         = property(name, T::class.asNullableTypeName(nullable), build)
+
+inline fun <reified T: Any> TypeParameter.bound(nullable: Boolean = false) = bound(T::class, nullable)
 
 inline fun <reified T: Any> Parameters.parameter(nullable: Boolean = false)
         = parameter(T::class.asNullableTypeName(nullable))

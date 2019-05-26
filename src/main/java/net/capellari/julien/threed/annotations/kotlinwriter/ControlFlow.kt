@@ -3,7 +3,7 @@ package net.capellari.julien.threed.annotations.kotlinwriter
 import net.capellari.julien.threed.annotations.kotlinwriter.interfaces.Codable
 
 // Classe
-class ControlFlow<T: Codable<*,*,T>>(
+class ControlFlow<T: Codable<T>>(
         val code: T,
         val format: String,
         val args: Array<out Any>,

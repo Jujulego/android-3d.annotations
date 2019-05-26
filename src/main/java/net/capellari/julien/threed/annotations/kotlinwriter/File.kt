@@ -7,10 +7,8 @@ import net.capellari.julien.threed.annotations.kotlinwriter.interfaces.Commentab
 import kotlin.reflect.KClass
 
 @KotlinMarker
-class File(pkg: String, name: String):
-        AbsWrapper<FileSpec,FileSpec.Builder>(FileSpec.builder(pkg, name)),
-        Annotable<FileSpec,FileSpec.Builder>,
-        Commentable<FileSpec,FileSpec.Builder> {
+class File(pkg: String, name: String): AbsWrapper<FileSpec,FileSpec.Builder>(FileSpec.builder(pkg, name)),
+        Annotable, Commentable {
 
     // Propriétés
     override val spec get() = builder.build()

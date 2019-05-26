@@ -10,10 +10,8 @@ import net.capellari.julien.threed.annotations.kotlinwriter.interfaces.Modifiabl
 import kotlin.reflect.KClass
 
 @KotlinMarker
-class Parameter:
-        AbsWrapper<ParameterSpec,ParameterSpec.Builder>,
-        Annotable<ParameterSpec,ParameterSpec.Builder>,
-        Modifiable<ParameterSpec,ParameterSpec.Builder> {
+class Parameter: AbsWrapper<ParameterSpec,ParameterSpec.Builder>,
+        Annotable, Modifiable {
 
     // Propriétés
     override val spec get() = builder.build()

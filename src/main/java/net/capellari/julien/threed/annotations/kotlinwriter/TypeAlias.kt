@@ -8,9 +8,8 @@ import net.capellari.julien.threed.annotations.kotlinwriter.interfaces.Modifiabl
 import kotlin.reflect.KClass
 
 @KotlinMarker
-class TypeAlias:
-        AbsWrapper<TypeAliasSpec, TypeAliasSpec.Builder>,
-        Modifiable<TypeAliasSpec, TypeAliasSpec.Builder> {
+class TypeAlias: AbsWrapper<TypeAliasSpec, TypeAliasSpec.Builder>,
+        Modifiable {
 
     // Propriétés
     override val spec get() = builder.build()

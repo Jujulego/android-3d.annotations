@@ -8,7 +8,9 @@ import net.capellari.julien.threed.annotations.kotlinwriter.interfaces.Returns
 import kotlin.reflect.KClass
 import kotlin.reflect.KFunction
 
-class Function(name: String): AbsFunction(FunSpec.builder(name)), Parameters, Returns {
+class Function(name: String): AbsFunction(FunSpec.builder(name)),
+        Parameters, Returns {
+
     // Méthodes
     // - receiver
     fun receiver(type: TypeName) {

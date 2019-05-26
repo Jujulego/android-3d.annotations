@@ -2,7 +2,7 @@ package net.capellari.julien.threed.annotations.kotlinwriter.interfaces
 
 import net.capellari.julien.threed.annotations.kotlinwriter.ControlFlow
 
-interface Codable<out S, out B, T: Codable<S, B, T>>: Commentable<S,B> {
+interface Codable<T: Codable<T>>: Commentable {
     // Opérateurs
     operator fun String.unaryPlus() {
         this@Codable.format(this)

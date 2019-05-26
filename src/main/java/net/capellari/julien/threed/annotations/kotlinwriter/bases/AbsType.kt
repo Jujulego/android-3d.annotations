@@ -1,12 +1,11 @@
 package net.capellari.julien.threed.annotations.kotlinwriter.bases
 
 import com.squareup.kotlinpoet.*
-import net.capellari.julien.threed.annotations.kotlinwriter.Code
+import net.capellari.julien.threed.annotations.kotlinwriter.*
 import net.capellari.julien.threed.annotations.kotlinwriter.Function
-import net.capellari.julien.threed.annotations.kotlinwriter.KotlinMarker
-import net.capellari.julien.threed.annotations.kotlinwriter.Property
 import net.capellari.julien.threed.annotations.kotlinwriter.interfaces.Annotable
 import net.capellari.julien.threed.annotations.kotlinwriter.interfaces.Modifiable
+import net.capellari.julien.threed.annotations.kotlinwriter.interfaces.Templatable
 import kotlin.reflect.KClass
 import kotlin.reflect.KFunction
 import kotlin.reflect.full.extensionReceiverParameter
@@ -14,10 +13,8 @@ import kotlin.reflect.full.instanceParameter
 import kotlin.reflect.full.valueParameters
 
 @KotlinMarker
-abstract class AbsType(builder: TypeSpec.Builder):
-        AbsWrapper<TypeSpec,TypeSpec.Builder>(builder),
-        Annotable<TypeSpec, TypeSpec.Builder>,
-        Modifiable<TypeSpec, TypeSpec.Builder> {
+abstract class AbsType(builder: TypeSpec.Builder): AbsWrapper<TypeSpec,TypeSpec.Builder>(builder),
+        Annotable, Modifiable, Templatable {
 
     // Propriétés
     override val spec get() = builder.build()
@@ -35,6 +32,9 @@ abstract class AbsType(builder: TypeSpec.Builder):
     override fun modifiers(vararg modifiers: KModifier) {
         builder.addModifiers(*modifiers)
     }
+
+    override fun typeParameter(name: String, build: TypeParameter.() -> Unit)
+            = TypeParameter(name).apply(build).spec.also { builder.addTypeVariable(it) }
 
     // - superclass
     fun superclass(pkg: String, name: String) = superclass(ClassName(pkg, name))

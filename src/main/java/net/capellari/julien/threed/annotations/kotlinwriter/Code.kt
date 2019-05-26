@@ -5,9 +5,8 @@ import net.capellari.julien.threed.annotations.kotlinwriter.bases.AbsWrapper
 import net.capellari.julien.threed.annotations.kotlinwriter.interfaces.Codable
 
 @KotlinMarker
-class Code:
-        AbsWrapper<CodeBlock,CodeBlock.Builder>(CodeBlock.builder()),
-        Codable<CodeBlock,CodeBlock.Builder,Code> {
+class Code: AbsWrapper<CodeBlock,CodeBlock.Builder>(CodeBlock.builder()),
+        Codable<Code> {
 
     // Propriétés
     override val spec get() = builder.build()
