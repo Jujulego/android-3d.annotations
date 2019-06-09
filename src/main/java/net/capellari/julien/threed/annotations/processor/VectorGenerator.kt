@@ -53,6 +53,7 @@ class VectorGenerator(processingEnv: ProcessingEnvironment): AbsGenerator(proces
 
         // Generate class
         val code = createFile(pkg, clsName.simpleName) {
+            // Classes
             addClass(clsName) {
                 // superclass
                 superclass("net.capellari.julien.threed.jni", "JNIClass")
@@ -254,16 +255,6 @@ class VectorGenerator(processingEnv: ProcessingEnvironment): AbsGenerator(proces
                     + "return \"Vec(${(0 until gen.deg).joinToString(", ") { "\${this[$it]}" }})\""
                 }
 
-                if (gen.deg == 3) {
-                    function("vect") {
-                        modifiers(KModifier.INFIX)
-                        parameter("v", clsName)
-                        returns(clsName)
-
-                        + "return $clsName(this[1] * v[2] - this[2] * v[1], this[0] * v[2] - this[2] * v[0], this[0] * v[1] - this[1] * v[0])"
-                    }
-                }
-
                 // Méthodes natives
                 function("getDataA") {
                     modifiers(KModifier.PRIVATE, KModifier.EXTERNAL)
@@ -289,11 +280,23 @@ class VectorGenerator(processingEnv: ProcessingEnvironment): AbsGenerator(proces
                 }
             }
 
+            // Functions
             function("vector") {
                 parameters(getCoordParameters(gen))
                 returns(clsName)
 
                 + ("return $clsName(${(0 until gen.deg).joinToString(", ") { "v$it" }})")
+            }
+
+            if (gen.deg == 3) {
+                function("cross") {
+                    modifiers(KModifier.INFIX)
+                    receiver(clsName)
+                    parameter("v", clsName)
+                    returns(clsName)
+
+                    + "return $clsName(this[1] * v[2] - this[2] * v[1], this[0] * v[2] - this[2] * v[0], this[0] * v[1] - this[1] * v[0])"
+                }
             }
         }
 
