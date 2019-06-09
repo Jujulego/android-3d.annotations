@@ -54,11 +54,11 @@ abstract class AbsType(builder: TypeSpec.Builder): AbsWrapper<TypeSpec,TypeSpec.
 
     fun superinterface(type: TypeName, delegate: String, vararg args: Any) {
         val code = CodeBlock.builder().add(delegate, *args).build()
-        builder.addSuperinterface(type, delegate)
+        builder.addSuperinterface(type, code)
     }
     fun superinterface(type: KClass<*>, delegate: String, vararg args: Any) {
         val code = CodeBlock.builder().add(delegate, *args).build()
-        builder.addSuperinterface(type, delegate)
+        builder.addSuperinterface(type, code)
     }
 
     // - fonctions
@@ -71,7 +71,6 @@ abstract class AbsType(builder: TypeSpec.Builder): AbsWrapper<TypeSpec,TypeSpec.
                 if (func.isInfix) modifiers(KModifier.INFIX)
 
                 val extParam = func.extensionReceiverParameter
-                val thisParam = func.instanceParameter
 
                 if (extParam != null) {
                     receiver(extParam.type.asTypeName())

@@ -1,8 +1,12 @@
 package net.capellari.julien.threed.annotations.processor
 
+import com.squareup.kotlinpoet.ClassName
+import net.capellari.julien.threed.annotations.math.Generator
+import net.capellari.julien.threed.annotations.math.NumberType
 import javax.annotation.processing.RoundEnvironment
 import javax.lang.model.element.Element
 import javax.lang.model.type.TypeMirror
+import kotlin.reflect.KClass
 
 // Annotations
 inline fun <reified T: Annotation> canonicalName()
@@ -33,4 +37,32 @@ val TypeMirror.simpleName: String get() {
     }
 
     return result
+}
+
+// AbsGenerator
+val Generator.identifier: String get() = when(type) {
+    NumberType.INT   -> "i"
+    NumberType.FLOAT -> "f"
+}
+
+val Generator.zero: String get() = when(type) {
+    NumberType.INT   -> "0"
+    NumberType.FLOAT -> "0f"
+}
+
+val Generator.degree_cls get() = ClassName("net.capellari.julien.threed.math", "D$deg")
+
+val Generator.kcls: KClass<*> get() = when(type) {
+    NumberType.INT   -> Int::class
+    NumberType.FLOAT -> Float::class
+}
+
+val Generator.karray: KClass<*> get() = when(type) {
+    NumberType.INT   -> IntArray::class
+    NumberType.FLOAT -> FloatArray::class
+}
+
+val Generator.array_name: String get() = when(type) {
+    NumberType.INT   -> "IntArray"
+    NumberType.FLOAT -> "FloatArray"
 }

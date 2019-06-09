@@ -4,75 +4,49 @@ import androidx.annotation.RequiresApi
 import com.squareup.kotlinpoet.*
 import com.squareup.kotlinpoet.ParameterizedTypeName.Companion.parameterizedBy
 import net.capellari.julien.threed.annotations.kotlinwriter.*
-import net.capellari.julien.threed.annotations.math.NumberType
-import net.capellari.julien.threed.annotations.math.PointClass
+import net.capellari.julien.threed.annotations.math.Generator
 import javax.annotation.processing.ProcessingEnvironment
 import javax.lang.model.element.Element
 import javax.lang.model.element.TypeElement
-import kotlin.reflect.KClass
 
 @RequiresApi(26)
-class PointGenerator(processingEnv: ProcessingEnvironment) {
-    // Propriétés
-    private val utils = Utils(processingEnv)
-
-    // Opérateur
-    operator fun invoke(it: Element) {
-        if (it is TypeElement) {
-            generate(it)
-        }
-    }
-
+class PointGenerator(processingEnv: ProcessingEnvironment): AbsGenerator(processingEnv) {
     // Functions
-    private fun getName(point: PointClass, t: String): String {
-        return "$t${point.deg}" +
-                when(point.type) {
-                    NumberType.INT   -> "i"
-                    NumberType.FLOAT -> "f"
-                }
+    private fun getName(gen: Generator, t: String): String {
+        return "$t${gen.deg}${gen.identifier}"
     }
 
-    private fun getNumberType(point: PointClass): KClass<*> {
-        return when(point.type) {
-            NumberType.INT   -> Int::class
-            NumberType.FLOAT -> Float::class
-        }
-    }
-
-    private fun getNumberArrayType(point: PointClass): KClass<*> {
-        return when(point.type) {
-            NumberType.INT   -> IntArray::class
-            NumberType.FLOAT -> FloatArray::class
-        }
-    }
-
-    private fun getCoordParameters(point: PointClass): List<Parameter> {
-        val type = getNumberType(point)
+    private fun getCoordParameters(gen: Generator): List<Parameter> {
+        val type = gen.kcls
         val params = mutableListOf<Parameter>()
 
-        for (i in 0 until point.deg) {
+        for (i in 0 until gen.deg) {
             params.add(Parameter("v$i", type))
         }
 
         return params
     }
 
-    private fun getInterface(point: PointClass, name: String): TypeName {
-        return ClassName("net.capellari.julien.threed.math", name)
-            .parameterizedBy(
-                getNumberType(point).asTypeName(),
-                ClassName("net.capellari.julien.threed.math", "D${point.deg}")
-            )
+    private fun genGeneratorType(gen: Generator): LambdaTypeName {
+        return LambdaTypeName.Companion.get(
+            null,
+            Int::class.asTypeName(),
+            returnType = gen.kcls.asTypeName()
+        )
     }
 
-    private fun generate(base: TypeElement) {
+    private fun getInterface(gen: Generator, name: String): TypeName {
+        return ClassName("net.capellari.julien.threed.math", name)
+            .parameterizedBy(gen.kcls.asTypeName(), gen.degree_cls)
+    }
+
+    override fun generate(base: TypeElement, gen: Generator) {
         // Get infos
         val pkg = "net.capellari.julien.threed"
-        val point = base.getAnnotation<PointClass>()
-        val clsName = ClassName(pkg, getName(point, "Point"))
+        val clsName = ClassName(pkg, getName(gen, "Point"))
 
-        val number = getNumberType(point)
-        val numberArray = getNumberArrayType(point)
+        val number = gen.kcls
+        val numberArray = gen.karray
 
         val baseName = base.asClassName()
             .parameterizedBy(number.asTypeName())
@@ -86,7 +60,7 @@ class PointGenerator(processingEnv: ProcessingEnvironment) {
 
                 // interface
                 superinterface(baseName)
-                superinterface(getInterface(point, "Point"))
+                superinterface(getInterface(gen, "Point"))
 
                 // Companion
                 companion {
@@ -94,7 +68,7 @@ class PointGenerator(processingEnv: ProcessingEnvironment) {
                         annotation<JvmStatic>()
                         modifiers(KModifier.PRIVATE, KModifier.EXTERNAL)
 
-                        parameters(getCoordParameters(point))
+                        parameters(getCoordParameters(gen))
                         returns<Long>()
                     }
 
@@ -129,18 +103,22 @@ class PointGenerator(processingEnv: ProcessingEnvironment) {
                 }
 
                 constructor {
-                    callThis("create(0, 0)")
+                    callThis("create(${gen.zero}, ${gen.zero})")
                 }
 
                 constructor {
-                    parameters(getCoordParameters(point))
-
-                    callThis("create(" + (0 until point.deg).joinToString(", ") { "v$it" } + ")")
+                    parameters(getCoordParameters(gen))
+                    callThis("create(" + (0 until gen.deg).joinToString(", ") { "v$it" } + ")")
                 }
 
                 constructor {
                     parameter("factors", numberArray)
                     callThis("createA(factors)")
+                }
+
+                constructor {
+                    parameter("gen", genGeneratorType(gen))
+                    callThis("${gen.array_name}(${gen.deg}, gen)")
                 }
 
                 constructor {
@@ -176,57 +154,57 @@ class PointGenerator(processingEnv: ProcessingEnvironment) {
                     modifiers(KModifier.OVERRIDE, KModifier.OPERATOR)
                     returns(clsName)
 
-                    + ("return ${clsName.simpleName}(" + (0 until point.deg).joinToString(", ") { "-this[$it]" } + ")")
+                    + ("return ${clsName.simpleName}(" + (0 until gen.deg).joinToString(", ") { "-this[$it]" } + ")")
                 }
 
                 function("plusAssign") {
                     modifiers(KModifier.OVERRIDE, KModifier.OPERATOR)
-                    parameter("v", getInterface(point, "Vector"))
+                    parameter("v", getInterface(gen, "Vector"))
 
-                    for (i in 0 until point.deg) {
+                    for (i in 0 until gen.deg) {
                         + "this[$i] += v[$i]"
                     }
                 }
 
                 function("minusAssign") {
                     modifiers(KModifier.OVERRIDE, KModifier.OPERATOR)
-                    parameter("v", getInterface(point, "Vector"))
+                    parameter("v", getInterface(gen, "Vector"))
 
-                    for (i in 0 until point.deg) {
+                    for (i in 0 until gen.deg) {
                         + "this[$i] -= v[$i]"
                     }
                 }
 
                 function("plus") {
                     modifiers(KModifier.OVERRIDE, KModifier.OPERATOR)
-                    parameter("v", getInterface(point, "Vector"))
+                    parameter("v", getInterface(gen, "Vector"))
                     returns(clsName)
 
-                    + ("return ${clsName.simpleName}(" + (0 until point.deg).joinToString(", ") { "this[$it] + v[$it]" } + ")")
+                    + ("return ${clsName.simpleName}(" + (0 until gen.deg).joinToString(", ") { "this[$it] + v[$it]" } + ")")
                 }
 
                 function("minus") {
                     modifiers(KModifier.OVERRIDE, KModifier.OPERATOR)
-                    parameter("v", getInterface(point, "Vector"))
+                    parameter("v", getInterface(gen, "Vector"))
                     returns(clsName)
 
-                    + ("return ${clsName.simpleName}(" + (0 until point.deg).joinToString(", ") { "this[$it] - v[$it]" } + ")")
+                    + ("return ${clsName.simpleName}(" + (0 until gen.deg).joinToString(", ") { "this[$it] - v[$it]" } + ")")
                 }
 
                 function("minus") {
                     modifiers(KModifier.OVERRIDE, KModifier.OPERATOR)
-                    parameter("pt", getInterface(point, "Point"))
-                    returns(ClassName(pkg, getName(point, "Vec")))
+                    parameter("pt", getInterface(gen, "Point"))
+                    returns(ClassName(pkg, getName(gen, "Vec")))
 
-                    + ("return ${getName(point, "Vec")}(" + (0 until point.deg).joinToString(", ") { "this[$it] - pt[$it]" } + ")")
+                    + ("return ${getName(gen, "Vec")}(" + (0 until gen.deg).joinToString(", ") { "this[$it] - pt[$it]" } + ")")
                 }
 
                 function("times") {
                     modifiers(KModifier.OVERRIDE, KModifier.OPERATOR)
-                    parameter("c", getInterface(point, "Coord"))
+                    parameter("c", getInterface(gen, "Coord"))
                     returns(number)
 
-                    + ("return " + (0 until point.deg).joinToString(" + ") { "(this[$it] * c[$it])" })
+                    + ("return " + (0 until gen.deg).joinToString(" + ") { "(this[$it] * c[$it])" })
                 }
 
                 // Méthodes
@@ -247,7 +225,7 @@ class PointGenerator(processingEnv: ProcessingEnvironment) {
                 }
 
                 override(Any::toString) {
-                    + ("return \"Point(" + (0 until point.deg).joinToString(", ") { "\${this[$it]}" } + ")\"")
+                    + ("return \"Point(" + (0 until gen.deg).joinToString(", ") { "\${this[$it]}" } + ")\"")
                 }
 
                 // Méthodes natives
