@@ -18,7 +18,8 @@ class ThreedAnnotationProcessor : AbstractProcessor() {
     // Constantes
     private val generators: Map<Generators,AbsGenerator> by lazy {
         mapOf(
-            Generators.POINT to PointGenerator(processingEnv)
+            Generators.POINT  to PointGenerator(processingEnv),
+            Generators.VECTOR to VectorGenerator(processingEnv)
         )
     }
 
