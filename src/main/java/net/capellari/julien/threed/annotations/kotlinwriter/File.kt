@@ -88,4 +88,8 @@ class File(pkg: String, name: String): AbsWrapper<FileSpec,FileSpec.Builder>(Fil
 
     fun property(name: String, type: KClass<*>, build: Property.() -> Unit = {})
             = Property(name, type).apply(build).spec.also { builder.addProperty(it) }
+
+    // - fonctions
+    fun function(name: String, build: Function.() -> Unit = {})
+            = Function(name).apply(build).spec.also { builder.addFunction(it) }
 }

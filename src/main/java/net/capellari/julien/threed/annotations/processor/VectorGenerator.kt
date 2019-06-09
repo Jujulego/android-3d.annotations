@@ -103,12 +103,12 @@ class VectorGenerator(processingEnv: ProcessingEnvironment): AbsGenerator(proces
                 }
 
                 constructor {
-                    callThis("create(${gen.zero}, ${gen.zero})")
+                    callThis("create(${(0 until gen.deg).joinToString(", ") { gen.zero }})")
                 }
 
                 constructor {
                     parameters(getCoordParameters(gen))
-                    callThis("create(" + (0 until gen.deg).joinToString(", ") { "v$it" } + ")")
+                    callThis("create(${(0 until gen.deg).joinToString(", ") { "v$it" }})")
                 }
 
                 constructor {
@@ -154,7 +154,7 @@ class VectorGenerator(processingEnv: ProcessingEnvironment): AbsGenerator(proces
                     modifiers(KModifier.OVERRIDE, KModifier.OPERATOR)
                     returns(clsName)
 
-                    + ("return ${clsName.simpleName}(" + (0 until gen.deg).joinToString(", ") { "-this[$it]" } + ")")
+                    + "return ${clsName.simpleName}(${(0 until gen.deg).joinToString(", ") { "-this[$it]" }})"
                 }
 
                 function("plusAssign") {
@@ -198,7 +198,7 @@ class VectorGenerator(processingEnv: ProcessingEnvironment): AbsGenerator(proces
                     parameter("v", getInterface(gen, "Vector"))
                     returns(clsName)
 
-                    + ("return ${clsName.simpleName}(" + (0 until gen.deg).joinToString(", ") { "this[$it] + v[$it]" } + ")")
+                    + "return ${clsName.simpleName}(${(0 until gen.deg).joinToString(", ") { "this[$it] + v[$it]" }})"
                 }
 
                 function("minus") {
@@ -206,7 +206,7 @@ class VectorGenerator(processingEnv: ProcessingEnvironment): AbsGenerator(proces
                     parameter("v", getInterface(gen, "Vector"))
                     returns(clsName)
 
-                    + ("return ${clsName.simpleName}(" + (0 until gen.deg).joinToString(", ") { "this[$it] - v[$it]" } + ")")
+                    + "return ${clsName.simpleName}(${(0 until gen.deg).joinToString(", ") { "this[$it] - v[$it]" }})"
                 }
 
                 function("times") {
@@ -214,7 +214,7 @@ class VectorGenerator(processingEnv: ProcessingEnvironment): AbsGenerator(proces
                     parameter("k", gen.kcls)
                     returns(clsName)
 
-                    + ("return ${clsName.simpleName}(" + (0 until gen.deg).joinToString(", ") { "this[$it] * k" } + ")")
+                    + "return ${clsName.simpleName}(${(0 until gen.deg).joinToString(", ") { "this[$it] * k" }})"
                 }
 
                 function("div") {
@@ -222,7 +222,7 @@ class VectorGenerator(processingEnv: ProcessingEnvironment): AbsGenerator(proces
                     parameter("k", gen.kcls)
                     returns(clsName)
 
-                    + ("return ${clsName.simpleName}(" + (0 until gen.deg).joinToString(", ") { "this[$it] / k" } + ")")
+                    + "return ${clsName.simpleName}(${(0 until gen.deg).joinToString(", ") { "this[$it] / k" }})"
                 }
 
                 function("times") {
@@ -230,7 +230,7 @@ class VectorGenerator(processingEnv: ProcessingEnvironment): AbsGenerator(proces
                     parameter("c", getInterface(gen, "Coord"))
                     returns(number)
 
-                    + ("return " + (0 until gen.deg).joinToString(" + ") { "(this[$it] * c[$it])" })
+                    + "return ${(0 until gen.deg).joinToString(" + ") { "(this[$it] * c[$it])" }}"
                 }
 
                 // Méthodes
@@ -251,7 +251,17 @@ class VectorGenerator(processingEnv: ProcessingEnvironment): AbsGenerator(proces
                 }
 
                 override(Any::toString) {
-                    + ("return \"Vec(" + (0 until gen.deg).joinToString(", ") { "\${this[$it]}" } + ")\"")
+                    + "return \"Vec(${(0 until gen.deg).joinToString(", ") { "\${this[$it]}" }})\""
+                }
+
+                if (gen.deg == 3) {
+                    function("vect") {
+                        modifiers(KModifier.INFIX)
+                        parameter("v", clsName)
+                        returns(clsName)
+
+                        + "return $clsName(this[1] * v[2] - this[2] * v[1], this[0] * v[2] - this[2] * v[0], this[0] * v[1] - this[1] * v[0])"
+                    }
                 }
 
                 // Méthodes natives
@@ -277,6 +287,13 @@ class VectorGenerator(processingEnv: ProcessingEnvironment): AbsGenerator(proces
                     parameter("other", clsName)
                     returns<Boolean>()
                 }
+            }
+
+            function("vector") {
+                parameters(getCoordParameters(gen))
+                returns(clsName)
+
+                + ("return $clsName(${(0 until gen.deg).joinToString(", ") { "v$it" }})")
             }
         }
 

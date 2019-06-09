@@ -103,12 +103,12 @@ class PointGenerator(processingEnv: ProcessingEnvironment): AbsGenerator(process
                 }
 
                 constructor {
-                    callThis("create(${gen.zero}, ${gen.zero})")
+                    callThis("create(${(0 until gen.deg).joinToString(", ") { gen.zero }})")
                 }
 
                 constructor {
                     parameters(getCoordParameters(gen))
-                    callThis("create(" + (0 until gen.deg).joinToString(", ") { "v$it" } + ")")
+                    callThis("create(${(0 until gen.deg).joinToString(", ") { "v$it" }})")
                 }
 
                 constructor {
@@ -154,7 +154,7 @@ class PointGenerator(processingEnv: ProcessingEnvironment): AbsGenerator(process
                     modifiers(KModifier.OVERRIDE, KModifier.OPERATOR)
                     returns(clsName)
 
-                    + ("return ${clsName.simpleName}(" + (0 until gen.deg).joinToString(", ") { "-this[$it]" } + ")")
+                    + "return ${clsName.simpleName}(${(0 until gen.deg).joinToString(", ") { "-this[$it]" }})"
                 }
 
                 function("plusAssign") {
@@ -180,7 +180,7 @@ class PointGenerator(processingEnv: ProcessingEnvironment): AbsGenerator(process
                     parameter("v", getInterface(gen, "Vector"))
                     returns(clsName)
 
-                    + ("return ${clsName.simpleName}(" + (0 until gen.deg).joinToString(", ") { "this[$it] + v[$it]" } + ")")
+                    + "return ${clsName.simpleName}(${(0 until gen.deg).joinToString(", ") { "this[$it] + v[$it]" }})"
                 }
 
                 function("minus") {
@@ -188,7 +188,7 @@ class PointGenerator(processingEnv: ProcessingEnvironment): AbsGenerator(process
                     parameter("v", getInterface(gen, "Vector"))
                     returns(clsName)
 
-                    + ("return ${clsName.simpleName}(" + (0 until gen.deg).joinToString(", ") { "this[$it] - v[$it]" } + ")")
+                    + "return ${clsName.simpleName}(${(0 until gen.deg).joinToString(", ") { "this[$it] - v[$it]" }})"
                 }
 
                 function("minus") {
@@ -196,7 +196,7 @@ class PointGenerator(processingEnv: ProcessingEnvironment): AbsGenerator(process
                     parameter("pt", getInterface(gen, "Point"))
                     returns(ClassName(pkg, getName(gen, "Vec")))
 
-                    + ("return ${getName(gen, "Vec")}(" + (0 until gen.deg).joinToString(", ") { "this[$it] - pt[$it]" } + ")")
+                    + "return ${getName(gen, "Vec")}(${(0 until gen.deg).joinToString(", ") { "this[$it] - pt[$it]" }})"
                 }
 
                 function("times") {
@@ -204,7 +204,7 @@ class PointGenerator(processingEnv: ProcessingEnvironment): AbsGenerator(process
                     parameter("c", getInterface(gen, "Coord"))
                     returns(number)
 
-                    + ("return " + (0 until gen.deg).joinToString(" + ") { "(this[$it] * c[$it])" })
+                    + "return ${(0 until gen.deg).joinToString(" + ") { "(this[$it] * c[$it])" }}"
                 }
 
                 // Méthodes
@@ -225,7 +225,7 @@ class PointGenerator(processingEnv: ProcessingEnvironment): AbsGenerator(process
                 }
 
                 override(Any::toString) {
-                    + ("return \"Point(" + (0 until gen.deg).joinToString(", ") { "\${this[$it]}" } + ")\"")
+                    + "return \"Point(${(0 until gen.deg).joinToString(", ") { "\${this[$it]}" }})\""
                 }
 
                 // Méthodes natives
@@ -251,6 +251,13 @@ class PointGenerator(processingEnv: ProcessingEnvironment): AbsGenerator(process
                     parameter("other", clsName)
                     returns<Boolean>()
                 }
+            }
+
+            function("point") {
+                parameters(getCoordParameters(gen))
+                returns(clsName)
+
+                + "return $clsName(${(0 until gen.deg).joinToString(", ") { "v$it" }})"
             }
         }
 
