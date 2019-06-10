@@ -5,6 +5,7 @@ import com.squareup.kotlinpoet.ParameterizedTypeName.Companion.parameterizedBy
 import net.capellari.julien.threed.annotations.kotlinwriter.*
 import net.capellari.julien.threed.annotations.kotlinwriter.Function
 import net.capellari.julien.threed.annotations.kotlinwriter.interfaces.Annotable
+import net.capellari.julien.threed.annotations.kotlinwriter.interfaces.Container
 import net.capellari.julien.threed.annotations.kotlinwriter.interfaces.Modifiable
 import net.capellari.julien.threed.annotations.kotlinwriter.interfaces.Templatable
 import kotlin.reflect.KClass
@@ -15,7 +16,7 @@ import kotlin.reflect.full.valueParameters
 
 @KotlinMarker
 abstract class AbsType(builder: TypeSpec.Builder): AbsWrapper<TypeSpec,TypeSpec.Builder>(builder),
-        Annotable, Modifiable, Templatable {
+        Annotable, Modifiable, Templatable, Container {
 
     // Propriétés
     override val spec get() = builder.build()
@@ -63,23 +64,8 @@ abstract class AbsType(builder: TypeSpec.Builder): AbsWrapper<TypeSpec,TypeSpec.
     }
 
     // - fonctions
-    fun function(name: String, build: Function.() -> Unit)
+    override fun function(name: String, build: Function.() -> Unit)
             = Function(name).apply(build).spec.also { builder.addFunction(it) }
-
-    inline fun function(name: String, vararg params: Parameter, returns: TypeName? = null, receiver: TypeName? = null, crossinline build: Function.() -> Unit)
-            = function(name) {
-                receiver?.let { receiver(receiver) }
-                params.forEach { builder.addParameter(it.spec) }
-                returns?.let { returns(returns) }
-
-                this.build()
-            }
-    inline fun function(name: String, vararg params: Parameter, returns: KClass<*>, receiver: TypeName? = null, crossinline build: Function.() -> Unit)
-            = function(name, *params, returns = returns.asTypeName(), receiver = receiver, build = build)
-    inline fun function(name: String, vararg params: Parameter, returns: TypeName? = null, receiver: KClass<*>, crossinline build: Function.() -> Unit)
-            = function(name, *params, returns = returns, receiver = receiver.asTypeName(), build = build)
-    inline fun function(name: String, vararg params: Parameter, returns: KClass<*>, receiver: KClass<*>, crossinline build: Function.() -> Unit)
-            = function(name, *params, returns = returns.asTypeName(), receiver = receiver.asTypeName(), build = build)
 
     inline fun operator(op: Operators, vararg params: Parameter, returns: TypeName? = null, receiver: TypeName? = null, crossinline build: Function.() -> Unit)
             = function(op.fname, *params, returns = returns, receiver = receiver) {
@@ -205,9 +191,7 @@ abstract class AbsType(builder: TypeSpec.Builder): AbsWrapper<TypeSpec,TypeSpec.
             }
 
     // - propriétés
-    fun property(name: String, type: TypeName, build: Property.() -> Unit = {})
-            = Property(name, type).apply(build).spec.also { builder.addProperty(it) }
-
-    fun property(name: String, type: KClass<*>, build: Property.() -> Unit = {})
+    override fun property(name: String, type: TypeName, build: Property.() -> Unit)
             = Property(name, type).apply(build).spec.also { builder.addProperty(it) }
 }
+

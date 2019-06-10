@@ -92,9 +92,8 @@ class PointGenerator(processingEnv: ProcessingEnvironment): AbsGenerator(process
                 }
 
                 // Constructeurs
-                primaryConstructor {
+                primaryConstructor("handle" of Long::class) {
                     modifiers(KModifier.INTERNAL)
-                    parameter<Long>("handle")
                 }
 
                 constructor {
@@ -106,18 +105,15 @@ class PointGenerator(processingEnv: ProcessingEnvironment): AbsGenerator(process
                     callThis("create(${(0 until gen.deg).joinToString(", ") { "v$it" }})")
                 }
 
-                constructor {
-                    parameter("factors", numberArray)
+                constructor("factors" of numberArray) {
                     callThis("createA(factors)")
                 }
 
-                constructor {
-                    parameter("gen", genGeneratorType(gen))
+                constructor("gen" of genGeneratorType(gen)) {
                     callThis("${gen.array_name}(${gen.deg}, gen)")
                 }
 
-                constructor {
-                    parameter("pt", clsName)
+                constructor("pt" of clsName) {
                     callThis("createC(pt)")
                 }
 

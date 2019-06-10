@@ -4,11 +4,12 @@ import com.squareup.kotlinpoet.*
 import net.capellari.julien.threed.annotations.kotlinwriter.bases.AbsWrapper
 import net.capellari.julien.threed.annotations.kotlinwriter.interfaces.Annotable
 import net.capellari.julien.threed.annotations.kotlinwriter.interfaces.Commentable
+import net.capellari.julien.threed.annotations.kotlinwriter.interfaces.Container
 import kotlin.reflect.KClass
 
 @KotlinMarker
 class File(pkg: String, name: String): AbsWrapper<FileSpec,FileSpec.Builder>(FileSpec.builder(pkg, name)),
-        Annotable, Commentable {
+        Annotable, Commentable, Container {
 
     // Propriétés
     override val spec get() = builder.build()
@@ -83,28 +84,10 @@ class File(pkg: String, name: String): AbsWrapper<FileSpec,FileSpec.Builder>(Fil
             = TypeAlias(name, type).apply(build).spec.also { builder.addTypeAlias(it) }
 
     // - propriétés
-    fun property(name: String, type: TypeName, build: Property.() -> Unit = {})
-            = Property(name, type).apply(build).spec.also { builder.addProperty(it) }
-
-    fun property(name: String, type: KClass<*>, build: Property.() -> Unit = {})
+    override fun property(name: String, type: TypeName, build: Property.() -> Unit)
             = Property(name, type).apply(build).spec.also { builder.addProperty(it) }
 
     // - fonctions
-    fun function(name: String, build: Function.() -> Unit = {})
+    override fun function(name: String, build: Function.() -> Unit)
             = Function(name).apply(build).spec.also { builder.addFunction(it) }
-
-    inline fun function(name: String, vararg params: Parameter, returns: TypeName? = null, receiver: TypeName? = null, crossinline build: Function.() -> Unit)
-            = function(name) {
-        receiver?.let { receiver(receiver) }
-        params.forEach { builder.addParameter(it.spec) }
-        returns?.let { returns(returns) }
-
-        this.build()
-    }
-    inline fun function(name: String, vararg params: Parameter, returns: KClass<*>, receiver: TypeName? = null, crossinline build: Function.() -> Unit)
-            = function(name, *params, returns = returns.asTypeName(), receiver = receiver, build = build)
-    inline fun function(name: String, vararg params: Parameter, returns: TypeName? = null, receiver: KClass<*>, crossinline build: Function.() -> Unit)
-            = function(name, *params, returns = returns, receiver = receiver.asTypeName(), build = build)
-    inline fun function(name: String, vararg params: Parameter, returns: KClass<*>, receiver: KClass<*>, crossinline build: Function.() -> Unit)
-            = function(name, *params, returns = returns.asTypeName(), receiver = receiver.asTypeName(), build = build)
 }

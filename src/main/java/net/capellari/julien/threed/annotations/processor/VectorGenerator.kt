@@ -91,9 +91,8 @@ class VectorGenerator(processingEnv: ProcessingEnvironment): AbsGenerator(proces
                 }
 
                 // Constructeurs
-                primaryConstructor {
+                primaryConstructor("handle" of Long::class) {
                     modifiers(KModifier.INTERNAL)
-                    parameter<Long>("handle")
                 }
 
                 constructor {
@@ -105,18 +104,15 @@ class VectorGenerator(processingEnv: ProcessingEnvironment): AbsGenerator(proces
                     callThis("create(${(0 until gen.deg).joinToString(", ") { "v$it" }})")
                 }
 
-                constructor {
-                    parameter("factors", numberArray)
+                constructor("factors" of numberArray) {
                     callThis("createA(factors)")
                 }
 
-                constructor {
-                    parameter("gen", genGeneratorType(gen))
+                constructor("gen" of genGeneratorType(gen)) {
                     callThis("${gen.array_name}(${gen.deg}, gen)")
                 }
 
-                constructor {
-                    parameter("v", clsName)
+                constructor("v" of clsName) {
                     callThis("createC(v)")
                 }
 

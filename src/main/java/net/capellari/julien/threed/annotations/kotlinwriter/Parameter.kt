@@ -20,6 +20,9 @@ class Parameter: AbsWrapper<ParameterSpec,ParameterSpec.Builder>,
     constructor(name: String, type: TypeName): super(ParameterSpec.builder(name, type))
     constructor(name: String, type: KClass<*>): super(ParameterSpec.builder(name, type))
 
+    constructor(type: TypeName): super(ParameterSpec.builder("", type))
+    constructor(type: KClass<*>): super(ParameterSpec.builder("", type))
+
     // Méthodes
     // - annotations
     override fun annotation(type: ClassName) {
@@ -43,6 +46,3 @@ class Parameter: AbsWrapper<ParameterSpec,ParameterSpec.Builder>,
         builder.defaultValue(Code().apply(build).spec)
     }
 }
-
-infix fun String.of(type: TypeName) = Parameter(this, type)
-infix fun String.of(type: KClass<*>) = Parameter(this, type)
