@@ -43,3 +43,6 @@ class Parameter: AbsWrapper<ParameterSpec,ParameterSpec.Builder>,
         builder.defaultValue(Code().apply(build).spec)
     }
 }
+
+infix fun String.of(type: TypeName) = Parameter(this, type)
+infix fun String.of(type: KClass<*>) = Parameter(this, type)

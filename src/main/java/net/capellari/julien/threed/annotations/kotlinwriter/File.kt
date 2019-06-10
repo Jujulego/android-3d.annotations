@@ -92,4 +92,19 @@ class File(pkg: String, name: String): AbsWrapper<FileSpec,FileSpec.Builder>(Fil
     // - fonctions
     fun function(name: String, build: Function.() -> Unit = {})
             = Function(name).apply(build).spec.also { builder.addFunction(it) }
+
+    inline fun function(name: String, vararg params: Parameter, returns: TypeName? = null, receiver: TypeName? = null, crossinline build: Function.() -> Unit)
+            = function(name) {
+        receiver?.let { receiver(receiver) }
+        params.forEach { builder.addParameter(it.spec) }
+        returns?.let { returns(returns) }
+
+        this.build()
+    }
+    inline fun function(name: String, vararg params: Parameter, returns: KClass<*>, receiver: TypeName? = null, crossinline build: Function.() -> Unit)
+            = function(name, *params, returns = returns.asTypeName(), receiver = receiver, build = build)
+    inline fun function(name: String, vararg params: Parameter, returns: TypeName? = null, receiver: KClass<*>, crossinline build: Function.() -> Unit)
+            = function(name, *params, returns = returns, receiver = receiver.asTypeName(), build = build)
+    inline fun function(name: String, vararg params: Parameter, returns: KClass<*>, receiver: KClass<*>, crossinline build: Function.() -> Unit)
+            = function(name, *params, returns = returns.asTypeName(), receiver = receiver.asTypeName(), build = build)
 }

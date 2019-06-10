@@ -6,7 +6,6 @@ import com.squareup.kotlinpoet.ParameterizedTypeName.Companion.parameterizedBy
 import net.capellari.julien.threed.annotations.kotlinwriter.*
 import net.capellari.julien.threed.annotations.math.Generator
 import javax.annotation.processing.ProcessingEnvironment
-import javax.lang.model.element.Element
 import javax.lang.model.element.TypeElement
 
 @RequiresApi(26)
@@ -73,20 +72,14 @@ class VectorGenerator(processingEnv: ProcessingEnvironment): AbsGenerator(proces
                         returns<Long>()
                     }
 
-                    function("createA") {
+                    function("createA", "factors" of numberArray, returns = Long::class) {
                         annotation<JvmStatic>()
                         modifiers(KModifier.PRIVATE, KModifier.EXTERNAL)
-
-                        parameter("factors", numberArray)
-                        returns<Long>()
                     }
 
-                    function("createC") {
+                    function("createC", "v" of clsName, returns = Long::class) {
                         annotation<JvmStatic>()
                         modifiers(KModifier.PRIVATE, KModifier.EXTERNAL)
-
-                        parameter("v", clsName)
-                        returns<Long>()
                     }
                 }
 
@@ -128,109 +121,63 @@ class VectorGenerator(processingEnv: ProcessingEnvironment): AbsGenerator(proces
                 }
 
                 // Opérateurs
-                function("get") {
-                    modifiers(KModifier.OVERRIDE, KModifier.OPERATOR)
-                    parameter<Int>("i")
-                    returns(number)
-
+                get("i" of Int::class, returns = number) {
                     + "return getCoord(i)"
                 }
 
-                function("set") {
-                    modifiers(KModifier.OVERRIDE, KModifier.OPERATOR)
-                    parameter<Int>("i")
-                    parameter("v", number)
-
+                set("i" of Int::class, "v" of number) {
                     + "return setCoord(i, v)"
                 }
 
-                function("unaryPlus") {
-                    modifiers(KModifier.OVERRIDE, KModifier.OPERATOR)
-                    returns(clsName)
-
+                unaryPlus(returns = clsName) {
                     + "return ${clsName.simpleName}(this)"
                 }
 
-                function("unaryMinus") {
-                    modifiers(KModifier.OVERRIDE, KModifier.OPERATOR)
-                    returns(clsName)
-
+                unaryMinus(returns = clsName) {
                     + "return ${clsName.simpleName}(${(0 until gen.deg).joinToString(", ") { "-this[$it]" }})"
                 }
 
-                function("plusAssign") {
-                    modifiers(KModifier.OVERRIDE, KModifier.OPERATOR)
-                    parameter("v", getInterface(gen, "Vector"))
-
+                plusAssign("v" of getInterface(gen, "Vector")) {
                     for (i in 0 until gen.deg) {
                         + "this[$i] += v[$i]"
                     }
                 }
 
-                function("minusAssign") {
-                    modifiers(KModifier.OVERRIDE, KModifier.OPERATOR)
-                    parameter("v", getInterface(gen, "Vector"))
-
+                minusAssign("v" of getInterface(gen, "Vector")) {
                     for (i in 0 until gen.deg) {
                         + "this[$i] -= v[$i]"
                     }
                 }
 
-                function("timesAssign") {
-                    modifiers(KModifier.OVERRIDE, KModifier.OPERATOR)
-                    parameter("k", gen.kcls)
-
+                timesAssign("k" of gen.kcls) {
                     for (i in 0 until gen.deg) {
                         + "this[$i] *= k"
                     }
                 }
 
-                function("divAssign") {
-                    modifiers(KModifier.OVERRIDE, KModifier.OPERATOR)
-                    parameter("k", gen.kcls)
-
+                divAssign("k" of gen.kcls) {
                     for (i in 0 until gen.deg) {
                         + "this[$i] /= k"
                     }
                 }
 
-                function("plus") {
-                    modifiers(KModifier.OVERRIDE, KModifier.OPERATOR)
-                    parameter("v", getInterface(gen, "Vector"))
-                    returns(clsName)
-
+                plus("v" of getInterface(gen, "Vector"), returns = clsName) {
                     + "return ${clsName.simpleName}(${(0 until gen.deg).joinToString(", ") { "this[$it] + v[$it]" }})"
                 }
 
-                function("minus") {
-                    modifiers(KModifier.OVERRIDE, KModifier.OPERATOR)
-                    parameter("v", getInterface(gen, "Vector"))
-                    returns(clsName)
-
+                minus("v" of getInterface(gen, "Vector"), returns = clsName) {
                     + "return ${clsName.simpleName}(${(0 until gen.deg).joinToString(", ") { "this[$it] - v[$it]" }})"
                 }
 
-                function("times") {
-                    modifiers(KModifier.OVERRIDE, KModifier.OPERATOR)
-                    parameter("k", gen.kcls)
-                    returns(clsName)
-
+                times("k" of gen.kcls, returns = clsName) {
                     + "return ${clsName.simpleName}(${(0 until gen.deg).joinToString(", ") { "this[$it] * k" }})"
                 }
 
-                function("div") {
-                    modifiers(KModifier.OVERRIDE, KModifier.OPERATOR)
-                    parameter("k", gen.kcls)
-                    returns(clsName)
-
+                div("k" of gen.kcls, returns = clsName) {
                     + "return ${clsName.simpleName}(${(0 until gen.deg).joinToString(", ") { "this[$it] / k" }})"
                 }
 
-                function("times") {
-                    modifiers(KModifier.OVERRIDE, KModifier.OPERATOR)
-                    parameter("c", getInterface(gen, "Coord"))
-                    returns(number)
-
+                times("c" of getInterface(gen, "Coord"), returns = number) {
                     + "return ${(0 until gen.deg).joinToString(" + ") { "(this[$it] * c[$it])" }}"
                 }
 
@@ -256,27 +203,20 @@ class VectorGenerator(processingEnv: ProcessingEnvironment): AbsGenerator(proces
                 }
 
                 // Méthodes natives
-                function("getDataA") {
+                function("getDataA", returns = numberArray) {
                     modifiers(KModifier.PRIVATE, KModifier.EXTERNAL)
-                    returns(numberArray)
                 }
 
-                function("getCoord") {
+                function("getCoord", "i" of Int::class, returns = number) {
                     modifiers(KModifier.PRIVATE, KModifier.EXTERNAL)
-                    parameter<Int>("i")
-                    returns(number)
                 }
 
-                function("setCoord") {
+                function("setCoord", "i" of Int::class, "v" of number) {
                     modifiers(KModifier.PRIVATE, KModifier.EXTERNAL)
-                    parameter<Int>("i")
-                    parameter("v", number)
                 }
 
-                function("equal") {
+                function("equal", "other" of clsName, returns = Boolean::class) {
                     modifiers(KModifier.PRIVATE, KModifier.EXTERNAL)
-                    parameter("other", clsName)
-                    returns<Boolean>()
                 }
             }
 
@@ -285,15 +225,12 @@ class VectorGenerator(processingEnv: ProcessingEnvironment): AbsGenerator(proces
                 parameters(getCoordParameters(gen))
                 returns(clsName)
 
-                + ("return $clsName(${(0 until gen.deg).joinToString(", ") { "v$it" }})")
+                + "return $clsName(${(0 until gen.deg).joinToString(", ") { "v$it" }})"
             }
 
             if (gen.deg == 3) {
-                function("cross") {
+                function("cross", "v" of clsName, receiver = clsName, returns = clsName) {
                     modifiers(KModifier.INFIX)
-                    receiver(clsName)
-                    parameter("v", clsName)
-                    returns(clsName)
 
                     + "return $clsName(this[1] * v[2] - this[2] * v[1], this[0] * v[2] - this[2] * v[0], this[0] * v[1] - this[1] * v[0])"
                 }
