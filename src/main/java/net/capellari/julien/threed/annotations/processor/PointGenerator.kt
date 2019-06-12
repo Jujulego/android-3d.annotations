@@ -3,10 +3,9 @@ package net.capellari.julien.threed.annotations.processor
 import androidx.annotation.RequiresApi
 import com.squareup.kotlinpoet.*
 import com.squareup.kotlinpoet.ParameterizedTypeName.Companion.parameterizedBy
-import net.capellari.julien.threed.annotations.kotlinwriter.*
+import net.capellari.julien.kotlinwriter.*
 import net.capellari.julien.threed.annotations.math.Generator
 import javax.annotation.processing.ProcessingEnvironment
-import javax.lang.model.element.Element
 import javax.lang.model.element.TypeElement
 
 @RequiresApi(26)
