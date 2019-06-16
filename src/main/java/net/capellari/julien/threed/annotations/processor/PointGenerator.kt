@@ -3,7 +3,7 @@ package net.capellari.julien.threed.annotations.processor
 import androidx.annotation.RequiresApi
 import com.squareup.kotlinpoet.*
 import com.squareup.kotlinpoet.ParameterizedTypeName.Companion.parameterizedBy
-import net.capellari.julien.kotlinwriter.*
+import net.capellari.julien.kotlinwriter2.*
 import net.capellari.julien.threed.annotations.math.Generator
 import javax.annotation.processing.ProcessingEnvironment
 import javax.lang.model.element.TypeElement
@@ -15,16 +15,8 @@ class PointGenerator(processingEnv: ProcessingEnvironment): AbsGenerator(process
         return "$t${gen.deg}${gen.identifier}"
     }
 
-    private fun getCoordParameters(gen: Generator): List<Parameter> {
-        val type = gen.kcls
-        val params = mutableListOf<Parameter>()
-
-        for (i in 0 until gen.deg) {
-            params.add(Parameter("v$i", type))
-        }
-
-        return params
-    }
+    private fun getCoordParameters(gen: Generator)
+            = (0 until gen.deg).map { "v$it" of gen.kcls }.toTypedArray()
 
     private fun genGeneratorType(gen: Generator): LambdaTypeName {
         return LambdaTypeName.Companion.get(
@@ -49,14 +41,14 @@ class PointGenerator(processingEnv: ProcessingEnvironment): AbsGenerator(process
 
         val baseName = base.asClassName()
             .parameterizedBy(number.asTypeName())
+        val coords = getCoordParameters(gen)
 
         // Generate class
-        val code = createFile(pkg, clsName.simpleName) {
+        val code = createFile(clsName) {
             // Classe
-            addClass(clsName) {
+            class_(clsName) {
                 // superclass
-                superclass("net.capellari.julien.threed.jni", "JNIClass")
-                superclassParameter("handle")
+                superclass("net.capellari.julien.threed.jni", "JNIClass", "handle")
 
                 // interface
                 superinterface(baseName)
@@ -64,147 +56,136 @@ class PointGenerator(processingEnv: ProcessingEnvironment): AbsGenerator(process
 
                 // Companion
                 companion {
-                    function("create") {
-                        annotation<JvmStatic>()
-                        modifiers(KModifier.PRIVATE, KModifier.EXTERNAL)
-
-                        parameters(getCoordParameters(gen))
-                        returns<Long>()
+                    function("create", *coords, returns = Long::class) {
+                        annotate<JvmStatic>()
+                        modifier(KModifier.PRIVATE, KModifier.EXTERNAL)
                     }
 
                     function("createA", "factors" of numberArray, returns = Long::class) {
-                        annotation<JvmStatic>()
-                        modifiers(KModifier.PRIVATE, KModifier.EXTERNAL)
+                        annotate<JvmStatic>()
+                        modifier(KModifier.PRIVATE, KModifier.EXTERNAL)
                     }
 
                     function("createC", "v" of clsName, returns = Long::class) {
-                        annotation<JvmStatic>()
-                        modifiers(KModifier.PRIVATE, KModifier.EXTERNAL)
+                        annotate<JvmStatic>()
+                        modifier(KModifier.PRIVATE, KModifier.EXTERNAL)
                     }
+                }
+
+                // Constructors
+                constructor("handle" of Long::class, primary = true) {
+                    modifier(KModifier.INTERNAL)
+                }
+
+                constructor {
+                    this_("create(${(0 until gen.deg).joinToString(", ") { gen.zero }})")
+                }
+
+                constructor(*coords) {
+                    this_("create(${coords.joinToString(", ")})")
+                }
+
+                constructor("factors" of numberArray) { (factors) ->
+                    this_("createA($factors)")
+                }
+
+                constructor("gen" of genGeneratorType(gen)) { (g) ->
+                    this_("${gen.array_name}(${gen.deg}, $g)")
+                }
+
+                constructor("pt" of clsName) { (pt) ->
+                    this_("createC($pt)")
+                }
+
+                // Native methods
+                val getDataA = function("getDataA", returns = numberArray) {
+                    modifier(KModifier.PRIVATE, KModifier.EXTERNAL)
+                }
+
+                val getCoord = function("getCoord", "i" of Int::class, returns = number) {
+                    modifier(KModifier.PRIVATE, KModifier.EXTERNAL)
+                }
+
+                val setCoord = function("setCoord", "i" of Int::class, "v" of number) {
+                    modifier(KModifier.PRIVATE, KModifier.EXTERNAL)
+                }
+
+                val equal = function("equal", "other" of clsName, returns = Boolean::class) {
+                    modifier(KModifier.PRIVATE, KModifier.EXTERNAL)
                 }
 
                 // Propriétés
-                property("data", numberArray) {
+                val data = property("data" of numberArray) {
                     getter {
-                        + "return getDataA()"
+                        + "return $getDataA()"
                     }
-                }
-
-                // Constructeurs
-                primaryConstructor("handle" of Long::class) {
-                    modifiers(KModifier.INTERNAL)
-                }
-
-                constructor {
-                    callThis("create(${(0 until gen.deg).joinToString(", ") { gen.zero }})")
-                }
-
-                constructor {
-                    parameters(getCoordParameters(gen))
-                    callThis("create(${(0 until gen.deg).joinToString(", ") { "v$it" }})")
-                }
-
-                constructor("factors" of numberArray) {
-                    callThis("createA(factors)")
-                }
-
-                constructor("gen" of genGeneratorType(gen)) {
-                    callThis("${gen.array_name}(${gen.deg}, gen)")
-                }
-
-                constructor("pt" of clsName) {
-                    callThis("createC(pt)")
                 }
 
                 // Opérateurs
-                get("i" of Int::class, returns = number) {
-                    + "return getCoord(i)"
+                get("i" of Int::class, returns = number) { (i) ->
+                    + "return $getCoord($i)"
                 }
-
-                set("i" of Int::class, "v" of number) {
-                    + "return setCoord(i, v)"
+                set("i" of Int::class, "v" of number) { (i, v) ->
+                    + "return $setCoord($i, $v)"
                 }
 
                 unaryPlus(returns = clsName) {
-                    + "return ${clsName.simpleName}(this)"
+                    + "return $clsName(this)"
                 }
-
                 unaryMinus(returns = clsName) {
-                    + "return ${clsName.simpleName}(${(0 until gen.deg).joinToString(", ") { "-this[$it]" }})"
+                    + "return $clsName(${(0 until gen.deg).joinToString(", ") { "-this[$it]" }})"
                 }
 
-                plusAssign("v" of getInterface(gen, "Vector")) {
+                plusAssign("v" of getInterface(gen, "Vector")) { (v) ->
                     for (i in 0 until gen.deg) {
-                        + "this[$i] += v[$i]"
+                        + "this[$i] += $v[$i]"
+                    }
+                }
+                minusAssign("v" of getInterface(gen, "Vector")) { (v) ->
+                    for (i in 0 until gen.deg) {
+                        + "this[$i] -= $v[$i]"
                     }
                 }
 
-                minusAssign("v" of getInterface(gen, "Vector")) {
-                    for (i in 0 until gen.deg) {
-                        + "this[$i] -= v[$i]"
-                    }
+                plus("v" of getInterface(gen, "Vector"), returns = clsName) { (v) ->
+                    + "return $clsName(${(0 until gen.deg).joinToString(", ") { "this[$it] + $v[$it]" }})"
+                }
+                minus("v" of getInterface(gen, "Vector"), returns = clsName) { (v) ->
+                    + "return $clsName(${(0 until gen.deg).joinToString(", ") { "this[$it] - $v[$it]" }})"
                 }
 
-                plus("v" of getInterface(gen, "Vector"), returns = clsName) {
-                    + "return ${clsName.simpleName}(${(0 until gen.deg).joinToString(", ") { "this[$it] + v[$it]" }})"
+                minus("pt" of getInterface(gen, "Point"), returns = ClassName(pkg, getName(gen, "Vec"))) { (pt) ->
+                    + "return ${getName(gen, "Vec")}(${(0 until gen.deg).joinToString(", ") { "this[$it] - $pt[$it]" }})"
                 }
 
-                minus("v" of getInterface(gen, "Vector"), returns = clsName) {
-                    + "return ${clsName.simpleName}(${(0 until gen.deg).joinToString(", ") { "this[$it] - v[$it]" }})"
-                }
-
-                minus("pt" of getInterface(gen, "Point"), returns = ClassName(pkg, getName(gen, "Vec"))) {
-                    + "return ${getName(gen, "Vec")}(${(0 until gen.deg).joinToString(", ") { "this[$it] - pt[$it]" }})"
-                }
-
-                times("c" of getInterface(gen, "Coord"), returns = number) {
-                    + "return ${(0 until gen.deg).joinToString(" + ") { "(this[$it] * c[$it])" }}"
+                times("c" of getInterface(gen, "Coord"), returns = number) { (c) ->
+                    + "return ${(0 until gen.deg).joinToString(" + ") { "(this[$it] * $c[$it])" }}"
                 }
 
                 // Méthodes
-                override(Any::equals) {
-                    flow("if (other === this)") {
+                override(Any::equals) { (other) ->
+                    flow("if ($other === this)") {
                         + "return true"
-                    }.end()
+                    }
 
-                    flow("if (other is ${clsName.simpleName})") {
-                        + "return equal(other)"
-                    }.end()
+                    flow("if ($other is $clsName)") {
+                        + "return $equal($other)"
+                    }
 
-                    + "return super.equals(other)"
+                    + "return super.equals($other)"
                 }
 
                 override(Any::hashCode) {
-                    + "return data.contentHashCode()"
+                    + "return $data.contentHashCode()"
                 }
 
                 override(Any::toString) {
                     + "return \"Point(${(0 until gen.deg).joinToString(", ") { "\${this[$it]}" }})\""
                 }
-
-                // Méthodes natives
-                function("getDataA", returns = numberArray) {
-                    modifiers(KModifier.PRIVATE, KModifier.EXTERNAL)
-                }
-
-                function("getCoord", "i" of Int::class, returns = number) {
-                    modifiers(KModifier.PRIVATE, KModifier.EXTERNAL)
-                }
-
-                function("setCoord", "i" of Int::class, "v" of number) {
-                    modifiers(KModifier.PRIVATE, KModifier.EXTERNAL)
-                }
-
-                function("equal", "other" of clsName, returns = Boolean::class) {
-                    modifiers(KModifier.PRIVATE, KModifier.EXTERNAL)
-                }
             }
 
             // Utils
-            function("point") {
-                parameters(getCoordParameters(gen))
-                returns(clsName)
-
+            function("point", *coords, returns = clsName) {
                 + "return $clsName(${(0 until gen.deg).joinToString(", ") { "v$it" }})"
             }
         }
