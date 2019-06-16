@@ -41,6 +41,7 @@ class PointGenerator(processingEnv: ProcessingEnvironment): AbsGenerator(process
 
         val baseName = base.asClassName()
             .parameterizedBy(number.asTypeName())
+
         val coords = getCoordParameters(gen)
 
         // Generate class
