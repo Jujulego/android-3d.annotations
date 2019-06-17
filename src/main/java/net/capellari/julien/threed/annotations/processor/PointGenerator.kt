@@ -14,7 +14,6 @@ class PointGenerator(processingEnv: ProcessingEnvironment): AbsGenerator(process
     override fun generate(base: TypeElement, gen: Generator) {
         // Get infos
         val pkg = "net.capellari.julien.threed"
-        val clsName = ClassName(pkg, getName(gen, "Point"))
 
         val number = gen.kcls
         val numberArray = gen.karray
@@ -25,9 +24,9 @@ class PointGenerator(processingEnv: ProcessingEnvironment): AbsGenerator(process
         val coords = getCoordParameters(gen)
 
         // Generate class
-        val code = createFile(clsName) {
+        val code = createFile(pkg, getName(gen, "Point")) {
             // Classe
-            class_(clsName) {
+            val Point = class_ { self ->
                 // superclass
                 superclass("net.capellari.julien.threed.jni", "JNIClass", "handle")
 
@@ -47,7 +46,7 @@ class PointGenerator(processingEnv: ProcessingEnvironment): AbsGenerator(process
                         modifier(KModifier.PRIVATE, KModifier.EXTERNAL)
                     }
 
-                    function("createC", "v" of clsName, returns = Long::class) {
+                    function("createC", "v" of self, returns = Long::class) {
                         annotate<JvmStatic>()
                         modifier(KModifier.PRIVATE, KModifier.EXTERNAL)
                     }
@@ -74,7 +73,7 @@ class PointGenerator(processingEnv: ProcessingEnvironment): AbsGenerator(process
                     this_("${gen.array_name}(${gen.deg}, $g)")
                 }
 
-                constructor("pt" of clsName) { (pt) ->
+                constructor("pt" of self) { (pt) ->
                     this_("createC($pt)")
                 }
 
@@ -91,7 +90,7 @@ class PointGenerator(processingEnv: ProcessingEnvironment): AbsGenerator(process
                     modifier(KModifier.PRIVATE, KModifier.EXTERNAL)
                 }
 
-                val equal = function("equal", "other" of clsName, returns = Boolean::class) {
+                val equal = function("equal", "other" of self, returns = Boolean::class) {
                     modifier(KModifier.PRIVATE, KModifier.EXTERNAL)
                 }
 
@@ -103,43 +102,43 @@ class PointGenerator(processingEnv: ProcessingEnvironment): AbsGenerator(process
                 }
 
                 // Opérateurs
-                get("i" of Int::class, returns = number) { (i) ->
+                operator("get", "i" of Int::class, returns = number) { (i) ->
                     + "return $getCoord($i)"
                 }
-                set("i" of Int::class, "v" of number) { (i, v) ->
+                operator("set", "i" of Int::class, "v" of number) { (i, v) ->
                     + "return $setCoord($i, $v)"
                 }
 
-                unaryPlus(returns = clsName) {
-                    + "return $clsName(this)"
+                operator("unaryPlus", returns = self) {
+                    + "return $self(this)"
                 }
-                unaryMinus(returns = clsName) {
-                    + "return $clsName(${(0 until gen.deg).joinToString(", ") { "-this[$it]" }})"
+                operator("unaryMinus", returns = self) {
+                    + "return $self(${(0 until gen.deg).joinToString(", ") { "-this[$it]" }})"
                 }
 
-                plusAssign("v" of getInterface(gen, "Vector")) { (v) ->
+                operator("plusAssign", "v" of getInterface(gen, "Vector")) { (v) ->
                     for (i in 0 until gen.deg) {
                         + "this[$i] += $v[$i]"
                     }
                 }
-                minusAssign("v" of getInterface(gen, "Vector")) { (v) ->
+                operator("minusAssign", "v" of getInterface(gen, "Vector")) { (v) ->
                     for (i in 0 until gen.deg) {
                         + "this[$i] -= $v[$i]"
                     }
                 }
 
-                plus("v" of getInterface(gen, "Vector"), returns = clsName) { (v) ->
-                    + "return $clsName(${(0 until gen.deg).joinToString(", ") { "this[$it] + $v[$it]" }})"
+                operator("plus", "v" of getInterface(gen, "Vector"), returns = self) { (v) ->
+                    + "return $self(${(0 until gen.deg).joinToString(", ") { "this[$it] + $v[$it]" }})"
                 }
-                minus("v" of getInterface(gen, "Vector"), returns = clsName) { (v) ->
-                    + "return $clsName(${(0 until gen.deg).joinToString(", ") { "this[$it] - $v[$it]" }})"
+                operator("minus", "v" of getInterface(gen, "Vector"), returns = self) { (v) ->
+                    + "return $self(${(0 until gen.deg).joinToString(", ") { "this[$it] - $v[$it]" }})"
                 }
 
-                minus("pt" of getInterface(gen, "Point"), returns = ClassName(pkg, getName(gen, "Vec"))) { (pt) ->
+                operator("minus", "pt" of getInterface(gen, "Point"), returns = ClassName(pkg, getName(gen, "Vec"))) { (pt) ->
                     + "return ${getName(gen, "Vec")}(${(0 until gen.deg).joinToString(", ") { "this[$it] - $pt[$it]" }})"
                 }
 
-                times("c" of getInterface(gen, "Coord"), returns = number) { (c) ->
+                operator("times", "c" of getInterface(gen, "Coord"), returns = number) { (c) ->
                     + "return ${(0 until gen.deg).joinToString(" + ") { "(this[$it] * $c[$it])" }}"
                 }
 
@@ -149,7 +148,7 @@ class PointGenerator(processingEnv: ProcessingEnvironment): AbsGenerator(process
                         + "return true"
                     }
 
-                    flow("if ($other is $clsName)") {
+                    flow("if ($other is $self)") {
                         + "return $equal($other)"
                     }
 
@@ -166,8 +165,8 @@ class PointGenerator(processingEnv: ProcessingEnvironment): AbsGenerator(process
             }
 
             // Utils
-            function("point", *coords, returns = clsName) {
-                + "return $clsName(${(0 until gen.deg).joinToString(", ") { "v$it" }})"
+            function("point", *coords, returns = Point) {
+                + "return $Point(${(0 until gen.deg).joinToString(", ") { "v$it" }})"
             }
         }
 

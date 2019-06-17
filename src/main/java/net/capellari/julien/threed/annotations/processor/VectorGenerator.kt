@@ -14,7 +14,6 @@ class VectorGenerator(processingEnv: ProcessingEnvironment): AbsGenerator(proces
     override fun generate(base: TypeElement, gen: Generator) {
         // Get infos
         val pkg = "net.capellari.julien.threed"
-        val clsName = ClassName(pkg, getName(gen, "Vec"))
 
         val number = gen.kcls
         val numberArray = gen.karray
@@ -25,9 +24,9 @@ class VectorGenerator(processingEnv: ProcessingEnvironment): AbsGenerator(proces
         val coords = getCoordParameters(gen)
 
         // Generate class
-        val code = createFile(clsName) {
+        val code = createFile(pkg, getName(gen, "Vec")) {
             // Classes
-            class_(clsName) {
+            val Vec = class_ { self ->
                 // superclass
                 superclass("net.capellari.julien.threed.jni", "JNIClass", "handle")
 
@@ -47,7 +46,7 @@ class VectorGenerator(processingEnv: ProcessingEnvironment): AbsGenerator(proces
                         modifier(KModifier.PRIVATE, KModifier.EXTERNAL)
                     }
 
-                    function("createC", "v" of clsName, returns = Long::class) {
+                    function("createC", "v" of self, returns = Long::class) {
                         annotate<JvmStatic>()
                         modifier(KModifier.PRIVATE, KModifier.EXTERNAL)
                     }
@@ -66,7 +65,7 @@ class VectorGenerator(processingEnv: ProcessingEnvironment): AbsGenerator(proces
                     modifier(KModifier.PRIVATE, KModifier.EXTERNAL)
                 }
 
-                val equal = function("equal", "other" of clsName, returns = Boolean::class) {
+                val equal = function("equal", "other" of self, returns = Boolean::class) {
                     modifier(KModifier.PRIVATE, KModifier.EXTERNAL)
                 }
 
@@ -98,63 +97,63 @@ class VectorGenerator(processingEnv: ProcessingEnvironment): AbsGenerator(proces
                     this_("${gen.array_name}(${gen.deg}, $g)")
                 }
 
-                constructor("v" of clsName) { (v) ->
+                constructor("v" of self) { (v) ->
                     this_("createC($v)")
                 }
 
                 // Opérateurs
-                get("i" of Int::class, returns = number) { (i) ->
+                operator("get", "i" of Int::class, returns = number) { (i) ->
                     + "return $getCoord($i)"
                 }
 
-                set("i" of Int::class, "v" of number) { (i, v) ->
+                operator("set", "i" of Int::class, "v" of number) { (i, v) ->
                     + "return $setCoord($i, $v)"
                 }
 
-                unaryPlus(returns = clsName) {
-                    + "return ${clsName.simpleName}(this)"
+                operator("unaryPlus", returns = self) {
+                    + "return $self(this)"
                 }
-                unaryMinus(returns = clsName) {
-                    + "return ${clsName.simpleName}(${(0 until gen.deg).joinToString(", ") { "-this[$it]" }})"
+                operator("unaryMinus", returns = self) {
+                    + "return $self(${(0 until gen.deg).joinToString(", ") { "-this[$it]" }})"
                 }
 
-                plusAssign("v" of getInterface(gen, "Vector")) { (v) ->
+                operator("plusAssign", "v" of getInterface(gen, "Vector")) { (v) ->
                     for (i in 0 until gen.deg) {
                         + "this[$i] += $v[$i]"
                     }
                 }
-                minusAssign("v" of getInterface(gen, "Vector")) { (v) ->
+                operator("minusAssign", "v" of getInterface(gen, "Vector")) { (v) ->
                     for (i in 0 until gen.deg) {
                         + "this[$i] -= $v[$i]"
                     }
                 }
 
-                timesAssign("k" of gen.kcls) { (k) ->
+                operator("timesAssign", "k" of gen.kcls) { (k) ->
                     for (i in 0 until gen.deg) {
                         + "this[$i] *= $k"
                     }
                 }
-                divAssign("k" of gen.kcls) { (k) ->
+                operator("divAssign", "k" of gen.kcls) { (k) ->
                     for (i in 0 until gen.deg) {
                         + "this[$i] /= $k"
                     }
                 }
 
-                plus("v" of getInterface(gen, "Vector"), returns = clsName) { (v) ->
-                    + "return ${clsName.simpleName}(${(0 until gen.deg).joinToString(", ") { "this[$it] + $v[$it]" }})"
+                operator("plus", "v" of getInterface(gen, "Vector"), returns = self) { (v) ->
+                    + "return $self(${(0 until gen.deg).joinToString(", ") { "this[$it] + $v[$it]" }})"
                 }
-                minus("v" of getInterface(gen, "Vector"), returns = clsName) { (v) ->
-                    + "return ${clsName.simpleName}(${(0 until gen.deg).joinToString(", ") { "this[$it] - $v[$it]" }})"
-                }
-
-                times("k" of gen.kcls, returns = clsName) { (k) ->
-                    + "return ${clsName.simpleName}(${(0 until gen.deg).joinToString(", ") { "this[$it] * $k" }})"
-                }
-                div("k" of gen.kcls, returns = clsName) { (k) ->
-                    + "return ${clsName.simpleName}(${(0 until gen.deg).joinToString(", ") { "this[$it] / $k" }})"
+                operator("minus", "v" of getInterface(gen, "Vector"), returns = self) { (v) ->
+                    + "return $self(${(0 until gen.deg).joinToString(", ") { "this[$it] - $v[$it]" }})"
                 }
 
-                times("c" of getInterface(gen, "Coord"), returns = number) { (c) ->
+                operator("times", "k" of gen.kcls, returns = self) { (k) ->
+                    + "return $self(${(0 until gen.deg).joinToString(", ") { "this[$it] * $k" }})"
+                }
+                operator("div", "k" of gen.kcls, returns = self) { (k) ->
+                    + "return $self(${(0 until gen.deg).joinToString(", ") { "this[$it] / $k" }})"
+                }
+
+                operator("times", "c" of getInterface(gen, "Coord"), returns = number) { (c) ->
                     + "return ${(0 until gen.deg).joinToString(" + ") { "(this[$it] * $c[$it])" }}"
                 }
 
@@ -164,7 +163,7 @@ class VectorGenerator(processingEnv: ProcessingEnvironment): AbsGenerator(proces
                         + "return true"
                     }
 
-                    flow("if ($other is ${clsName.simpleName})") {
+                    flow("if ($other is $self)") {
                         + "return $equal($other)"
                     }
 
@@ -181,15 +180,15 @@ class VectorGenerator(processingEnv: ProcessingEnvironment): AbsGenerator(proces
             }
 
             // Functions
-            function("vector", *coords, returns = clsName) {
-                + "return $clsName(${(0 until gen.deg).joinToString(", ") { "v$it" }})"
+            function("vector", *coords, returns = Vec) {
+                + "return $Vec(${(0 until gen.deg).joinToString(", ") { "v$it" }})"
             }
 
             if (gen.deg == 3) {
-                function("cross", "v" of clsName, receiver = clsName, returns = clsName) { (v) ->
+                function("cross", "v" of Vec, receiver = Vec, returns = Vec) { (v) ->
                     modifier(KModifier.INFIX)
 
-                    + "return $clsName(this[1] * $v[2] - this[2] * $v[1], this[0] * $v[2] - this[2] * $v[0], this[0] * $v[1] - this[1] * $v[0])"
+                    + "return $Vec(this[1] * $v[2] - this[2] * $v[1], this[0] * $v[2] - this[2] * $v[0], this[0] * $v[1] - this[1] * $v[0])"
                 }
             }
         }
