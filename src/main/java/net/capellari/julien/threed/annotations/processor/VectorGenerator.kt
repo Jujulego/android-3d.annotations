@@ -11,26 +11,6 @@ import javax.lang.model.element.TypeElement
 @RequiresApi(26)
 class VectorGenerator(processingEnv: ProcessingEnvironment): AbsGenerator(processingEnv) {
     // Functions
-    private fun getName(gen: Generator, t: String): String {
-        return "$t${gen.deg}${gen.identifier}"
-    }
-
-    private fun getCoordParameters(gen: Generator)
-            = (0 until gen.deg).map { "v$it" of gen.kcls }.toTypedArray()
-
-    private fun genGeneratorType(gen: Generator): LambdaTypeName {
-        return LambdaTypeName.Companion.get(
-            null,
-            Int::class.asTypeName(),
-            returnType = gen.kcls.asTypeName()
-        )
-    }
-
-    private fun getInterface(gen: Generator, name: String): TypeName {
-        return ClassName("net.capellari.julien.threed.math", name)
-            .parameterizedBy(gen.kcls.asTypeName(), gen.degree_cls)
-    }
-
     override fun generate(base: TypeElement, gen: Generator) {
         // Get infos
         val pkg = "net.capellari.julien.threed"
