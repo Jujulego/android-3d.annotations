@@ -66,3 +66,8 @@ val Generator.array_name: String get() = when(type) {
     NumberType.INT   -> "IntArray"
     NumberType.FLOAT -> "FloatArray"
 }
+
+val Generator.array_gen: String get() = when(type) {
+    NumberType.INT   -> "intArrayOf"
+    NumberType.FLOAT -> "floatArrayOf"
+}

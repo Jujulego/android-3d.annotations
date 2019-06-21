@@ -79,6 +79,7 @@ class VectorGenerator(processingEnv: ProcessingEnvironment): AbsGenerator(proces
                 // Constructeurs
                 constructor("handle" of Long::class, primary = true) {
                     modifier(KModifier.INTERNAL)
+                    super_("handle")
                 }
 
                 constructor {

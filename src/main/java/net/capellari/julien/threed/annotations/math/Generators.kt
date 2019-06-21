@@ -1,5 +1,5 @@
 package net.capellari.julien.threed.annotations.math
 
 enum class Generators {
-    POINT, VECTOR
+    POINT, VECTOR, MATRIX
 }

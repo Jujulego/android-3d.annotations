@@ -55,6 +55,7 @@ class PointGenerator(processingEnv: ProcessingEnvironment): AbsGenerator(process
                 // Constructors
                 constructor("handle" of Long::class, primary = true) {
                     modifier(KModifier.INTERNAL)
+                    super_("handle")
                 }
 
                 constructor {
