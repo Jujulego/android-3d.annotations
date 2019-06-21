@@ -49,6 +49,10 @@ val Generator.zero: String get() = when(type) {
     NumberType.INT   -> "0"
     NumberType.FLOAT -> "0f"
 }
+val Generator.one: String get() = when(type) {
+    NumberType.INT   -> "1"
+    NumberType.FLOAT -> "1f"
+}
 
 val Generator.degree_cls get() = ClassName("net.capellari.julien.threed.math", "D$deg")
 

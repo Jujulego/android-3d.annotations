@@ -13,15 +13,15 @@ class MatrixGenerator(processingEnv: ProcessingEnvironment): AbsGenerator(proces
     val names = arrayOf("a", "b", "c", "d")
 
     // Functions
-    fun getMatrixParameters(gen: Generator): Array<Parameter> {
-        val params = mutableListOf<Parameter>()
-        for (i in 0 until gen.deg) {
-            for (j in 0 until gen.deg) {
-                params.add("${names[i]}${names[j]}" of gen.kcls)
+    inline fun <reified T> parameters(gen: Generator, build: (Int, Int) -> T): List<T> {
+        val params = mutableListOf<T>()
+        for (l in 0 until gen.deg) {
+            for (c in 0 until gen.deg) {
+                params.add(build(l, c))
             }
         }
 
-        return params.toTypedArray()
+        return params
     }
 
     fun getMatSize(gen: Generator): ParameterizedTypeName {
@@ -36,16 +36,16 @@ class MatrixGenerator(processingEnv: ProcessingEnvironment): AbsGenerator(proces
         val number = gen.kcls
         val numberArray = gen.karray
 
-        val matp = getMatrixParameters(gen)
+        val matp = parameters(gen) { l, c -> (names[l] + names[c]) of gen.kcls }.toTypedArray()
         val intf = getInterface(gen, "Matrix")
 
-        val Point  = ClassName(pkg, getName(gen, "Point"))
-        val Vec = ClassName(pkg, getName(gen, "Vec"))
+        val Point = ClassName(pkg, getName(gen, "Point"))
+        val Vec   = ClassName(pkg, getName(gen, "Vec"))
 
         // Generate class
         val code = createFile(pkg, getName(gen, "Mat")) {
-            // Classe
-            class_ { self ->
+            // Class
+            val Mat = class_ { self ->
                 // superclass
                 superclass("net.capellari.julien.threed.jni", "JNIClass", "handle")
                 superinterface(intf)
@@ -65,6 +65,10 @@ class MatrixGenerator(processingEnv: ProcessingEnvironment): AbsGenerator(proces
                     function("createM", "v" of self, returns = Long::class) {
                         annotate<JvmStatic>()
                         modifier(KModifier.PRIVATE, KModifier.EXTERNAL)
+                    }
+
+                    function("identity", returns = self) {
+                        + "return $self(${parameters(gen) { l, c -> if (l == c) gen.one else gen.zero }.joinToString(", ")})"
                     }
                 }
 
@@ -150,13 +154,13 @@ class MatrixGenerator(processingEnv: ProcessingEnvironment): AbsGenerator(proces
                 val lig = function("lig", "l" of Int::class) { (l) ->
                     modifier(KModifier.OVERRIDE)
 
-                    + "return ${Vec.simpleName}(${(0 until gen.deg).joinToString(", ") { "this[$it,$l]" }})"
+                    + "return ${Vec.simpleName}(${(0 until gen.deg).joinToString(", ") { "this[$l,$it]" }})"
                 }
 
                 function("col", "c" of Int::class) { (c) ->
                     modifier(KModifier.OVERRIDE)
 
-                    + "return ${Vec.simpleName}(${(0 until gen.deg).joinToString(", ") { "this[$c,$it]" }})"
+                    + "return ${Vec.simpleName}(${(0 until gen.deg).joinToString(", ") { "this[$it,$c]" }})"
                 }
 
                 val dataM = template(unbounded("T")) { (T) ->
@@ -233,6 +237,11 @@ class MatrixGenerator(processingEnv: ProcessingEnvironment): AbsGenerator(proces
                 operator("div", "k" of number) { (k) ->
                     + "return $dataM { $self { i -> it[i] / $k }}"
                 }
+            }
+
+            // Utils
+            function("matrix", *matp) {
+                + "return $Mat(${matp.joinToString(", ")})"
             }
         }
 
