@@ -124,6 +124,13 @@ class MatrixGenerator(processingEnv: ProcessingEnvironment): AbsGenerator(proces
                     modifier(KModifier.PRIVATE, KModifier.EXTERNAL)
                 }
 
+                val timesP = function("timesP", "pt" of Point, returns = Long::class) {
+                    modifier(KModifier.PRIVATE, KModifier.EXTERNAL)
+                }
+                val timesV = function("timesV", "v" of Vec, returns = Long::class) {
+                    modifier(KModifier.PRIVATE, KModifier.EXTERNAL)
+                }
+
                 // Properties
                 val size = property("size" of getMatSize(gen) default "MatSize(D${gen.deg}, D${gen.deg})") {
                     modifier(KModifier.OVERRIDE)
@@ -151,6 +158,10 @@ class MatrixGenerator(processingEnv: ProcessingEnvironment): AbsGenerator(proces
                     + "return $dataP.contentHashCode()"
                 }
 
+                override(Any::toString) {
+                    + "return \"Mat(\${$dataP.joinToString(\", \")})\""
+                }
+
                 val lig = function("lig", "l" of Int::class) { (l) ->
                     modifier(KModifier.OVERRIDE)
 
@@ -175,20 +186,30 @@ class MatrixGenerator(processingEnv: ProcessingEnvironment): AbsGenerator(proces
 
                 // Operator
                 operator("get", "c" of Int::class, "l" of Int::class, returns = number) { (c, l) ->
+                    modifier(KModifier.OVERRIDE)
+
                     + "return $getFactor($c, $l)"
                 }
                 operator("set", "c" of Int::class, "l" of Int::class, "v" of number) { (c, l, v) ->
+                    modifier(KModifier.OVERRIDE)
+
                     + "return $setFactor($c, $l, $v)"
                 }
 
                 operator("unaryPlus", returns = self) {
+                    modifier(KModifier.OVERRIDE)
+
                     + "return $self($dataP)"
                 }
                 operator("unaryMinus", returns = self) {
+                    modifier(KModifier.OVERRIDE)
+
                     + "return $dataM { $self { i -> -it[i] } }"
                 }
 
                 operator("plusAssign", "mat" of intf) { (mat) ->
+                    modifier(KModifier.OVERRIDE)
+
                     flow("if ($mat is $self)") {
                         + "return $plusA($mat)"
                     }
@@ -200,10 +221,14 @@ class MatrixGenerator(processingEnv: ProcessingEnvironment): AbsGenerator(proces
                     }
                 }
                 operator("plus", "mat" of intf) { (mat) ->
+                    modifier(KModifier.OVERRIDE)
+
                     + "return $self(this).also { it += $mat }"
                 }
 
                 operator("minusAssign", "mat" of intf) { (mat) ->
+                    modifier(KModifier.OVERRIDE)
+
                     flow("if ($mat is $self)") {
                         + "return $minusA($mat)"
                     }
@@ -215,27 +240,50 @@ class MatrixGenerator(processingEnv: ProcessingEnvironment): AbsGenerator(proces
                     }
                 }
                 operator("minus", "mat" of intf) { (mat) ->
+                    modifier(KModifier.OVERRIDE)
+
                     + "return $self(this).also { it -= $mat }"
                 }
 
                 operator("timesAssign", "k" of number) { (k) ->
+                    modifier(KModifier.OVERRIDE)
+
                     + "return $timesA($k)"
                 }
                 operator("times", "k" of number) { (k) ->
+                    modifier(KModifier.OVERRIDE)
+
                     + "return $dataM { $self { i -> it[i] * $k }}"
-                }
-                operator("times", "pt" of getInterface(gen, "Point"), returns = Point) { (pt) ->
-                    + "return ${Point.simpleName} { $lig(it) * $pt }"
-                }
-                operator("times", "v" of getInterface(gen, "Vector"), returns = Vec) { (v) ->
-                    + "return ${Vec.simpleName} { $lig(it) * $v }"
                 }
 
                 operator("divAssign", "k" of number) { (k) ->
+                    modifier(KModifier.OVERRIDE)
+
                     + "return $divA($k)"
                 }
                 operator("div", "k" of number) { (k) ->
+                    modifier(KModifier.OVERRIDE)
+
                     + "return $dataM { $self { i -> it[i] / $k }}"
+                }
+
+                operator("times", "pt" of getInterface(gen, "Point"), returns = Point) { (pt) ->
+                    modifier(KModifier.OVERRIDE)
+
+                    flow("if ($pt is ${Point.simpleName})") {
+                        + "return ${Point.simpleName}($timesP($pt))"
+                    }
+
+                    + "return ${Point.simpleName} { $lig(it) * $pt }"
+                }
+                operator("times", "v" of getInterface(gen, "Vector"), returns = Vec) { (v) ->
+                    modifier(KModifier.OVERRIDE)
+
+                    flow("if ($v is ${Vec.simpleName})") {
+                        + "return ${Vec.simpleName}($timesV($v))"
+                    }
+
+                    + "return ${Vec.simpleName} { $lig(it) * $v }"
                 }
             }
 

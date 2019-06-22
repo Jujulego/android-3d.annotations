@@ -104,57 +104,88 @@ class VectorGenerator(processingEnv: ProcessingEnvironment): AbsGenerator(proces
 
                 // Opérateurs
                 operator("get", "i" of Int::class, returns = number) { (i) ->
+                    modifier(KModifier.OVERRIDE)
+
                     + "return $getCoord($i)"
                 }
-
                 operator("set", "i" of Int::class, "v" of number) { (i, v) ->
+                    modifier(KModifier.OVERRIDE)
+
                     + "return $setCoord($i, $v)"
                 }
 
                 operator("unaryPlus", returns = self) {
+                    modifier(KModifier.OVERRIDE)
+
                     + "return $self(this)"
                 }
                 operator("unaryMinus", returns = self) {
+                    modifier(KModifier.OVERRIDE)
+
                     + "return $self(${(0 until gen.deg).joinToString(", ") { "-this[$it]" }})"
                 }
 
                 operator("plusAssign", "v" of getInterface(gen, "Vector")) { (v) ->
+                    modifier(KModifier.OVERRIDE)
+
                     for (i in 0 until gen.deg) {
                         + "this[$i] += $v[$i]"
                     }
                 }
+                operator("plus", "v" of getInterface(gen, "Vector"), returns = self) { (v) ->
+                    modifier(KModifier.OVERRIDE)
+
+                    + "return $self(${(0 until gen.deg).joinToString(", ") { "this[$it] + $v[$it]" }})"
+                }
+
                 operator("minusAssign", "v" of getInterface(gen, "Vector")) { (v) ->
+                    modifier(KModifier.OVERRIDE)
+
                     for (i in 0 until gen.deg) {
                         + "this[$i] -= $v[$i]"
                     }
                 }
+                operator("minus", "v" of getInterface(gen, "Vector"), returns = self) { (v) ->
+                    modifier(KModifier.OVERRIDE)
+
+                    + "return $self(${(0 until gen.deg).joinToString(", ") { "this[$it] - $v[$it]" }})"
+                }
 
                 operator("timesAssign", "k" of gen.kcls) { (k) ->
+                    modifier(KModifier.OVERRIDE)
+
                     for (i in 0 until gen.deg) {
                         + "this[$i] *= $k"
                     }
                 }
+                operator("times", "k" of gen.kcls, returns = self) { (k) ->
+                    modifier(KModifier.OVERRIDE)
+
+                    + "return $self(${(0 until gen.deg).joinToString(", ") { "this[$it] * $k" }})"
+                }
+
                 operator("divAssign", "k" of gen.kcls) { (k) ->
+                    modifier(KModifier.OVERRIDE)
+
                     for (i in 0 until gen.deg) {
                         + "this[$i] /= $k"
                     }
                 }
-
-                operator("plus", "v" of getInterface(gen, "Vector"), returns = self) { (v) ->
-                    + "return $self(${(0 until gen.deg).joinToString(", ") { "this[$it] + $v[$it]" }})"
-                }
-                operator("minus", "v" of getInterface(gen, "Vector"), returns = self) { (v) ->
-                    + "return $self(${(0 until gen.deg).joinToString(", ") { "this[$it] - $v[$it]" }})"
-                }
-
-                operator("times", "k" of gen.kcls, returns = self) { (k) ->
-                    + "return $self(${(0 until gen.deg).joinToString(", ") { "this[$it] * $k" }})"
-                }
                 operator("div", "k" of gen.kcls, returns = self) { (k) ->
+                    modifier(KModifier.OVERRIDE)
+
                     + "return $self(${(0 until gen.deg).joinToString(", ") { "this[$it] / $k" }})"
                 }
 
+                operator("times", "mat" of getInterface(gen, "Matrix"), returns = self) { (mat) ->
+                    modifier(KModifier.OVERRIDE)
+
+                    + "return $self { this * $mat.col(it) }"
+                }
+
                 operator("times", "c" of getInterface(gen, "Coord"), returns = number) { (c) ->
+                    modifier(KModifier.OVERRIDE)
+
                     + "return ${(0 until gen.deg).joinToString(" + ") { "(this[$it] * $c[$it])" }}"
                 }
 
@@ -176,7 +207,7 @@ class VectorGenerator(processingEnv: ProcessingEnvironment): AbsGenerator(proces
                 }
 
                 override(Any::toString) {
-                    + "return \"Vec(${(0 until gen.deg).joinToString(", ") { "\${this[$it]}" }})\""
+                    + "return \"Vec(\${$data.joinToString(\", \")})\""
                 }
             }
 
