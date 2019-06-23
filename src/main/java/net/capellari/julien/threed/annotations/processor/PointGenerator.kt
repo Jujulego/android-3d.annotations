@@ -23,6 +23,8 @@ class PointGenerator(processingEnv: ProcessingEnvironment): AbsGenerator(process
 
         val coords = getCoordParameters(gen)
 
+        val Mat = ClassName(pkg, getName(gen, "Mat"))
+
         // Generate class
         val code = createFile(pkg, getName(gen, "Point")) {
             // Classe
@@ -95,6 +97,10 @@ class PointGenerator(processingEnv: ProcessingEnvironment): AbsGenerator(process
                     modifier(KModifier.PRIVATE, KModifier.EXTERNAL)
                 }
 
+                val timesMA = function("timesMA", "mat" of Mat) {
+                    modifier(KModifier.PRIVATE, KModifier.EXTERNAL)
+                }
+
                 // Propriétés
                 val data = property("data" of numberArray) {
                     getter {
@@ -155,6 +161,29 @@ class PointGenerator(processingEnv: ProcessingEnvironment): AbsGenerator(process
                     modifier(KModifier.OVERRIDE)
 
                     + "return ${getName(gen, "Vec")}(${(0 until gen.deg).joinToString(", ") { "this[$it] - $pt[$it]" }})"
+                }
+
+                operator("timesAssign", "mat" of getInterface(gen, "Matrix")) { (mat) ->
+                    modifier(KModifier.OVERRIDE)
+
+                    flow("if ($mat is $Mat)") {
+                        + "$timesMA($mat)"
+                    }.next("else") {
+                        + "val tmp = $self(this)"
+
+                        flow("for (c in 0 until ${gen.deg})") {
+                            + "this[c] = tmp * $mat.col(c)"
+                        }
+                    }
+                }
+                operator("times", "mat" of getInterface(gen, "Matrix"), returns = self) { (mat) ->
+                    modifier(KModifier.OVERRIDE)
+
+                    flow("if ($mat is $Mat)") {
+                        + "return $self(this).also { it *= $mat }"
+                    }.next("else") {
+                        + "return $self { this * $mat.col(it) }"
+                    }
                 }
 
                 operator("times", "c" of getInterface(gen, "Coord"), returns = number) { (c) ->
