@@ -23,6 +23,7 @@ class VectorGenerator(processingEnv: ProcessingEnvironment): AbsGenerator(proces
 
         val coords = getCoordParameters(gen)
 
+        val Point = ClassName(pkg, getName(gen, "Point"))
         val Mat = ClassName(pkg, getName(gen, "Mat"))
 
         // Generate class
@@ -68,6 +69,13 @@ class VectorGenerator(processingEnv: ProcessingEnvironment): AbsGenerator(proces
                 }
 
                 val equal = function("equal", "other" of self, returns = Boolean::class) {
+                    modifier(KModifier.PRIVATE, KModifier.EXTERNAL)
+                }
+
+                val timesV = function("timesV", "v" of self, returns = number) {
+                    modifier(KModifier.PRIVATE, KModifier.EXTERNAL)
+                }
+                val timesP = function("timesP", "pt" of Point, returns = number) {
                     modifier(KModifier.PRIVATE, KModifier.EXTERNAL)
                 }
 
@@ -206,6 +214,13 @@ class VectorGenerator(processingEnv: ProcessingEnvironment): AbsGenerator(proces
 
                 operator("times", "c" of getInterface(gen, "Coord"), returns = number) { (c) ->
                     modifier(KModifier.OVERRIDE)
+
+                    flow("if ($c is $self)") {
+                        + "return $timesV($c)"
+                    }
+                    flow("if ($c is $Point)") {
+                        + "return $timesP($c)"
+                    }
 
                     + "return ${(0 until gen.deg).joinToString(" + ") { "(this[$it] * $c[$it])" }}"
                 }
