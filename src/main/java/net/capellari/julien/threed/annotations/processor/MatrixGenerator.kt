@@ -56,12 +56,10 @@ class MatrixGenerator(processingEnv: ProcessingEnvironment): AbsGenerator(proces
                         annotate<JvmStatic>()
                         modifier(KModifier.PRIVATE, KModifier.EXTERNAL)
                     }
-
                     function("createA", "factors" of numberArray, returns = Long::class) {
                         annotate<JvmStatic>()
                         modifier(KModifier.PRIVATE, KModifier.EXTERNAL)
                     }
-
                     function("createM", "v" of self, returns = Long::class) {
                         annotate<JvmStatic>()
                         modifier(KModifier.PRIVATE, KModifier.EXTERNAL)
@@ -191,6 +189,16 @@ class MatrixGenerator(processingEnv: ProcessingEnvironment): AbsGenerator(proces
                         modifier(KModifier.INLINE)
 
                         + "return $dataP.let($f)"
+                    }
+                }
+
+                if (gen.deg == 4) {
+                    function("scale", "fx" of number, "fy" of number, "fz" of number, returns = self) {
+                        modifier(KModifier.EXTERNAL)
+                    }
+
+                    function("translate", "dx" of number, "dy" of number, "dz" of number, returns = self) {
+                        modifier(KModifier.EXTERNAL)
                     }
                 }
 
@@ -324,6 +332,16 @@ class MatrixGenerator(processingEnv: ProcessingEnvironment): AbsGenerator(proces
             // Utils
             function("matrix", *matp) {
                 + "return $Mat(${matp.joinToString(", ")})"
+            }
+
+            if (gen.deg == 4) {
+                function("scale", "fx" of number, "fy" of number, "fz" of number) { (fx, fy, fz) ->
+                    + "return $Mat.identity().scale($fx, $fy, $fz)"
+                }
+
+                function("translate", "dx" of number, "dy" of number, "dz" of number) { (dx, dy, dz) ->
+                    + "return $Mat.identity().translate($dx, $dy, $dz)"
+                }
             }
         }
 
