@@ -67,6 +67,17 @@ class MatrixGenerator(processingEnv: ProcessingEnvironment): AbsGenerator(proces
                     function("identity", returns = self) {
                         + "return $self(${parameters(gen) { l, c -> if (l == c) gen.one else gen.zero }.joinToString(", ")})"
                     }
+
+                    if (gen.deg == 4) {
+                        val nrotate = function("nrotate", "a" of Double::class, "x" of number, "y" of number, "z" of number, returns = Long::class) {
+                            annotate<JvmStatic>()
+                            modifier(KModifier.PRIVATE, KModifier.EXTERNAL)
+                        }
+
+                        function("rotate", "a" of Double::class, "x" of number, "y" of number, "z" of number, returns = self) { params ->
+                            + "return $self($nrotate(${params.joinToString(", ")}))"
+                        }
+                    }
                 }
 
                 // Constructors
@@ -317,17 +328,21 @@ class MatrixGenerator(processingEnv: ProcessingEnvironment): AbsGenerator(proces
             }
 
             // Utils
-            function("matrix", *matp) {
+            function("matrix", *matp, returns = Mat) {
                 + "return $Mat(${matp.joinToString(", ")})"
             }
 
             if (gen.deg == 4) {
-                function("scale", "fx" of number, "fy" of number, "fz" of number) { (fx, fy, fz) ->
+                function("scale", "fx" of number, "fy" of number, "fz" of number, returns = Mat) { (fx, fy, fz) ->
                     + "return $Mat.identity().scale($fx, $fy, $fz)"
                 }
 
-                function("translate", "dx" of number, "dy" of number, "dz" of number) { (dx, dy, dz) ->
+                function("translate", "dx" of number, "dy" of number, "dz" of number, returns = Mat) { (dx, dy, dz) ->
                     + "return $Mat.identity().translate($dx, $dy, $dz)"
+                }
+
+                function("rotate", "a" of Double::class, "x" of number, "y" of number, "z" of number, returns = Mat) { (a, x, y, z) ->
+                    + "return $Mat.rotate($a, $x, $y, $z)"
                 }
             }
         }
