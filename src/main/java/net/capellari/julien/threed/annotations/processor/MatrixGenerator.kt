@@ -39,7 +39,6 @@ class MatrixGenerator(processingEnv: ProcessingEnvironment): AbsGenerator(proces
         val matp = parameters(gen) { l, c -> (names[l] + names[c]) of gen.kcls }.toTypedArray()
         val intf = getInterface(gen, "Matrix")
 
-        val Point = ClassName(pkg, getName(gen, "Point"))
         val Vec   = ClassName(pkg, getName(gen, "Vec"))
 
         // Generate class
@@ -132,9 +131,6 @@ class MatrixGenerator(processingEnv: ProcessingEnvironment): AbsGenerator(proces
                     modifier(KModifier.PRIVATE, KModifier.EXTERNAL)
                 }
 
-                val timesP = function("timesP", "pt" of Point, returns = Long::class) {
-                    modifier(KModifier.PRIVATE, KModifier.EXTERNAL)
-                }
                 val timesV = function("timesV", "v" of Vec, returns = Long::class) {
                     modifier(KModifier.PRIVATE, KModifier.EXTERNAL)
                 }
@@ -309,15 +305,6 @@ class MatrixGenerator(processingEnv: ProcessingEnvironment): AbsGenerator(proces
                     + "return $self { l, c -> $lig(l) * $mat.$col(c) }"
                 }
 
-                operator("times", "pt" of getInterface(gen, "Point"), returns = Point) { (pt) ->
-                    modifier(KModifier.OVERRIDE)
-
-                    flow("if ($pt is ${Point.simpleName})") {
-                        + "return ${Point.simpleName}($timesP($pt))"
-                    }
-
-                    + "return ${Point.simpleName} { $lig(it) * $pt }"
-                }
                 operator("times", "v" of getInterface(gen, "Vector"), returns = Vec) { (v) ->
                     modifier(KModifier.OVERRIDE)
 

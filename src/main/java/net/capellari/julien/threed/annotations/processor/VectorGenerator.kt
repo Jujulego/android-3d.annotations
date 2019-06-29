@@ -10,7 +10,18 @@ import javax.lang.model.element.TypeElement
 
 @RequiresApi(26)
 class VectorGenerator(processingEnv: ProcessingEnvironment): AbsGenerator(processingEnv) {
+    val names = arrayOf("x", "y", "z", "a")
+
     // Functions
+    inline fun <reified T> parameters(deg: Int, build: (Int) -> T): List<T> {
+        val params = mutableListOf<T>()
+        for (i in 0 until deg) {
+            params.add(build(i))
+        }
+
+        return params
+    }
+
     override fun generate(base: TypeElement, gen: Generator) {
         // Get infos
         val pkg = "net.capellari.julien.threed"
@@ -21,9 +32,8 @@ class VectorGenerator(processingEnv: ProcessingEnvironment): AbsGenerator(proces
         val baseName = base.asClassName()
             .parameterizedBy(number.asTypeName())
 
-        val coords = getCoordParameters(gen)
+        val coords = parameters(gen.deg) { i -> names[i] of number }.toTypedArray()
 
-        val Point = ClassName(pkg, getName(gen, "Point"))
         val Mat = ClassName(pkg, getName(gen, "Mat"))
 
         // Generate class
@@ -73,9 +83,6 @@ class VectorGenerator(processingEnv: ProcessingEnvironment): AbsGenerator(proces
                 }
 
                 val timesV = function("timesV", "v" of self, returns = number) {
-                    modifier(KModifier.PRIVATE, KModifier.EXTERNAL)
-                }
-                val timesP = function("timesP", "pt" of Point, returns = number) {
                     modifier(KModifier.PRIVATE, KModifier.EXTERNAL)
                 }
 
@@ -218,9 +225,6 @@ class VectorGenerator(processingEnv: ProcessingEnvironment): AbsGenerator(proces
                     flow("if ($c is $self)") {
                         + "return $timesV($c)"
                     }
-                    flow("if ($c is $Point)") {
-                        + "return $timesP($c)"
-                    }
 
                     + "return ${(0 until gen.deg).joinToString(" + ") { "(this[$it] * $c[$it])" }}"
                 }
@@ -249,7 +253,13 @@ class VectorGenerator(processingEnv: ProcessingEnvironment): AbsGenerator(proces
 
             // Functions
             function("vector", *coords, returns = Vec) {
-                + "return $Vec(${(0 until gen.deg).joinToString(", ") { "v$it" }})"
+                + "return $Vec(${coords.joinToString(", ")})"
+            }
+
+            if (gen.deg > 2) {
+                function("point", *(coords.sliceArray(0 until (gen.deg - 1))), returns = Vec) { coords ->
+                    +"return $Vec(${coords.joinToString(", ")}, ${gen.one})"
+                }
             }
 
             if (gen.deg == 3) {
