@@ -249,6 +249,19 @@ class VectorGenerator(processingEnv: ProcessingEnvironment): AbsGenerator(proces
                 override(Any::toString) {
                     + "return \"Vec(\${$data.joinToString(\", \")})\""
                 }
+
+                // 3d bonus !
+                if (gen.deg == 3) {
+                    val ncross = function("ncross", "v" of self, returns = Long::class) {
+                        modifier(KModifier.PRIVATE, KModifier.EXTERNAL)
+                    }
+
+                    function("cross", "v" of self, returns = self) { (v) ->
+                        modifier(KModifier.INFIX)
+
+                        + "return $self($ncross($v))"
+                    }
+                }
             }
 
             // Functions
@@ -258,15 +271,7 @@ class VectorGenerator(processingEnv: ProcessingEnvironment): AbsGenerator(proces
 
             if (gen.deg > 2) {
                 function("point", *(coords.sliceArray(0 until (gen.deg - 1))), returns = Vec) { coords ->
-                    +"return $Vec(${coords.joinToString(", ")}, ${gen.one})"
-                }
-            }
-
-            if (gen.deg == 3) {
-                function("cross", "v" of Vec, receiver = Vec, returns = Vec) { (v) ->
-                    modifier(KModifier.INFIX)
-
-                    + "return $Vec(this[1] * $v[2] - this[2] * $v[1], this[0] * $v[2] - this[2] * $v[0], this[0] * $v[1] - this[1] * $v[0])"
+                    + "return $Vec(${coords.joinToString(", ")}, ${gen.one})"
                 }
             }
         }
