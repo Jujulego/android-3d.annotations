@@ -174,7 +174,7 @@ class MatrixGenerator(processingEnv: ProcessingEnvironment): AbsGenerator(proces
                 }
 
                 override(Any::toString) {
-                    + "return \"Mat(\${$dataP.joinToString(\", \")})\""
+                    + "return \"Mat(\${factors { _, _, v -> v }.joinToString(\", \")})\""
                 }
 
                 val lig = function("lig", "l" of Int::class) { (l) ->
@@ -187,16 +187,6 @@ class MatrixGenerator(processingEnv: ProcessingEnvironment): AbsGenerator(proces
                     modifier(KModifier.OVERRIDE)
 
                     + "return ${Vec.simpleName}(${(0 until gen.deg).joinToString(", ") { "this[$it,$c]" }})"
-                }
-
-                val dataM = template(unbounded("T")) { (T) ->
-                    T.reified = true
-
-                    function("data", "f" of lambda("" of numberArray, returns = T), returns = T) { (f) ->
-                        modifier(KModifier.INLINE)
-
-                        + "return $dataP.let($f)"
-                    }
                 }
 
                 if (gen.deg == 4) {
@@ -224,12 +214,12 @@ class MatrixGenerator(processingEnv: ProcessingEnvironment): AbsGenerator(proces
                 operator("unaryPlus", returns = self) {
                     modifier(KModifier.OVERRIDE)
 
-                    + "return $self($dataP)"
+                    + "return $self(this)"
                 }
                 operator("unaryMinus", returns = self) {
                     modifier(KModifier.OVERRIDE)
 
-                    + "return $dataM { $self { i -> -it[i] } }"
+                    + "return $self(this).also { it *= -${gen.one} }"
                 }
 
                 operator("plusAssign", "mat" of intf) { (mat) ->
@@ -278,7 +268,7 @@ class MatrixGenerator(processingEnv: ProcessingEnvironment): AbsGenerator(proces
                 operator("times", "k" of number) { (k) ->
                     modifier(KModifier.OVERRIDE)
 
-                    + "return $dataM { $self { i -> it[i] * $k }}"
+                    + "return $self(this).also { it *= $k }"
                 }
 
                 operator("divAssign", "k" of number) { (k) ->
@@ -289,7 +279,7 @@ class MatrixGenerator(processingEnv: ProcessingEnvironment): AbsGenerator(proces
                 operator("div", "k" of number) { (k) ->
                     modifier(KModifier.OVERRIDE)
 
-                    + "return $dataM { $self { i -> it[i] / $k }}"
+                    + "return $self(this).also { it /= $k }"
                 }
 
                 /*operator("timesAssign", "mat" of intf) { (mat) ->
