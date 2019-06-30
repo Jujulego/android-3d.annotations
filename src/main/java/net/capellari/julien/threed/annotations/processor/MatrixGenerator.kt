@@ -40,6 +40,7 @@ class MatrixGenerator(processingEnv: ProcessingEnvironment): AbsGenerator(proces
         val intf = getInterface(gen, "Matrix")
 
         val Vec   = ClassName(pkg, getName(gen, "Vec"))
+        val Vec3 = ClassName(pkg, "Vec3${gen.identifier}")
 
         // Generate class
         val code = createFile(pkg, getName(gen, "Mat")) {
@@ -69,13 +70,26 @@ class MatrixGenerator(processingEnv: ProcessingEnvironment): AbsGenerator(proces
                     }
 
                     if (gen.deg == 4) {
-                        val nrotate = function("nrotate", "a" of Double::class, "x" of number, "y" of number, "z" of number, returns = Long::class) {
+                        // rotate
+                        val nrotate = function("nrotate", "a" of Double::class, "axe" of Vec3, returns = Long::class) {
                             annotate<JvmStatic>()
                             modifier(KModifier.PRIVATE, KModifier.EXTERNAL)
                         }
+                        val rotate = function("rotate", "a" of Double::class, "axe" of Vec3, returns = self) { (a, axe) ->
+                            + "return $self($nrotate($a, $axe))"
+                        }
 
-                        function("rotate", "a" of Double::class, "x" of number, "y" of number, "z" of number, returns = self) { params ->
-                            + "return $self($nrotate(${params.joinToString(", ")}))"
+                        function(rotate.name, "a" of Double::class, "x" of number, "y" of number, "z" of number, returns = self) { (a, x, y, z) ->
+                            + "return $rotate($a, $Vec3($x, $y, $z))"
+                        }
+
+                        // lookAt
+                        val nlookAt = function("nlookAt", "eye" of Vec3, "center" of Vec3, "up" of Vec3, returns = Long::class) {
+                            annotate<JvmStatic>()
+                            modifier(KModifier.PRIVATE, KModifier.EXTERNAL)
+                        }
+                        function("lookAt", "eye" of Vec3, "center" of Vec3, "up" of Vec3, returns = self) { (eye, center, up) ->
+                            + "return $self($nlookAt($eye, $center, $up))"
                         }
                     }
                 }
@@ -190,12 +204,18 @@ class MatrixGenerator(processingEnv: ProcessingEnvironment): AbsGenerator(proces
                 }
 
                 if (gen.deg == 4) {
-                    function("scale", "fx" of number, "fy" of number, "fz" of number, returns = self) {
+                    val scale = function("scale", "f" of Vec3, returns = self) {
                         modifier(KModifier.EXTERNAL)
                     }
+                    function(scale.name, "fx" of number, "fy" of number, "fz" of number, returns = self) { (fx, fy, fz) ->
+                        + "return $scale($Vec3($fx, $fy, $fz))"
+                    }
 
-                    function("translate", "dx" of number, "dy" of number, "dz" of number, returns = self) {
+                    val translate = function("translate", "d" of Vec3, returns = self) {
                         modifier(KModifier.EXTERNAL)
+                    }
+                    function(translate.name, "dx" of number, "dy" of number, "dz" of number, returns = self) { (dx, dy, dz) ->
+                        + "return $translate($Vec3($dx, $dy, $dz))"
                     }
                 }
 
@@ -326,13 +346,26 @@ class MatrixGenerator(processingEnv: ProcessingEnvironment): AbsGenerator(proces
                 function("scale", "fx" of number, "fy" of number, "fz" of number, returns = Mat) { (fx, fy, fz) ->
                     + "return $Mat.identity().scale($fx, $fy, $fz)"
                 }
+                function("scale", "f" of Vec3 , returns = Mat) { (f) ->
+                    + "return $Mat.identity().scale($f)"
+                }
 
                 function("translate", "dx" of number, "dy" of number, "dz" of number, returns = Mat) { (dx, dy, dz) ->
                     + "return $Mat.identity().translate($dx, $dy, $dz)"
                 }
+                function("translate", "d" of Vec3, returns = Mat) { (d) ->
+                    + "return $Mat.identity().translate($d)"
+                }
 
                 function("rotate", "a" of Double::class, "x" of number, "y" of number, "z" of number, returns = Mat) { (a, x, y, z) ->
                     + "return $Mat.rotate($a, $x, $y, $z)"
+                }
+                function("rotate", "a" of Double::class, "axe" of Vec3, returns = Mat) { (a, axe) ->
+                    + "return $Mat.rotate($a, $axe)"
+                }
+
+                function("lookAt", "eye" of Vec3, "center" of Vec3, "up" of Vec3, returns = Mat) { (eye, center, up) ->
+                    + "return $Mat.lookAt($eye, $center, $up)"
                 }
             }
         }
