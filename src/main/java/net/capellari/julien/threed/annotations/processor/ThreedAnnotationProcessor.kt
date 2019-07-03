@@ -19,7 +19,8 @@ class ThreedAnnotationProcessor : AbstractProcessor() {
     private val generators: Map<Generators,AbsGenerator> by lazy {
         mapOf(
             Generators.VECTOR to VectorGenerator(processingEnv),
-            Generators.MATRIX to MatrixGenerator(processingEnv)
+            Generators.MATRIX to MatrixGenerator(processingEnv),
+            Generators.VECTOR_ARRAY to VectorArrayGenerator(processingEnv)
         )
     }
 

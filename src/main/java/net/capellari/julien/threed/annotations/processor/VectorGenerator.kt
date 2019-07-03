@@ -12,7 +12,7 @@ import javax.lang.model.element.TypeElement
 class VectorGenerator(processingEnv: ProcessingEnvironment): AbsGenerator(processingEnv) {
     val names = arrayOf("x", "y", "z", "a")
 
-    // Functions
+    // Methods
     inline fun <reified T> parameters(deg: Int, build: (Int) -> T): List<T> {
         val params = mutableListOf<T>()
         for (i in 0 until deg) {
