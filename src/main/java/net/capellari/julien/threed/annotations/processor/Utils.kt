@@ -3,6 +3,8 @@ package net.capellari.julien.threed.annotations.processor
 import androidx.annotation.RequiresApi
 import com.squareup.kotlinpoet.CodeBlock
 import com.squareup.kotlinpoet.FileSpec
+import java.io.OutputStreamWriter
+import java.nio.charset.StandardCharsets
 import java.nio.file.Files
 import java.nio.file.Path
 import java.nio.file.Paths
@@ -34,7 +36,7 @@ internal class Utils(val processingEnv: ProcessingEnvironment) {
     val log = Logger(processingEnv)
 
     @RequiresApi(26)
-    val sourceDir = Paths.get(processingEnv.options[KAPT_KOTLIN_GENERATED_OPTION_NAME])
+    val sourceDir = Paths.get(processingEnv.options[KAPT_KOTLIN_GENERATED_OPTION_NAME]!!)
 
     // Elements
     fun type(name: String): TypeElement = processingEnv.elementUtils.getTypeElement(name)
@@ -63,6 +65,16 @@ internal class Utils(val processingEnv: ProcessingEnvironment) {
         Files.createDirectories(output)
 
         // Write to file
-        code.writeTo(output)
+        val buffer = StringBuffer()
+        code.writeTo(buffer)
+
+        val out = output.resolve("${code.name}.kt")
+        val writer = OutputStreamWriter(Files.newOutputStream(out), StandardCharsets.UTF_8)
+
+        writer.write(buffer
+            .replace("external get\\(\\)".toRegex(), "external get")
+        )
+
+        writer.close()
     }
 }

@@ -37,15 +37,28 @@ class VectorArrayGenerator(processingEnv: ProcessingEnvironment): AbsGenerator(p
 
                 // Companion
                 companion {
-                    function("create", returns = Long::class) {
+                    function("create", "n" of Int::class, returns = Long::class) {
                         annotate<JvmStatic>()
                         modifier(KModifier.PRIVATE, KModifier.EXTERNAL)
                     }
                 }
 
+                // Natives methods
+                val nget = function("nget", "i" of Int::class, returns = Long::class) {
+                    modifier(KModifier.PRIVATE, KModifier.EXTERNAL)
+                }
+
+                function("add", "v" of Vec) {
+                    modifier(KModifier.OVERRIDE, KModifier.EXTERNAL)
+                }
+
                 // Properties
-                property("size" of Int::class default 0) {
+                property("size" of Int::class) {
                     modifier(KModifier.OVERRIDE)
+
+                    getter {
+                        modifier(KModifier.EXTERNAL)
+                    }
                 }
 
                 // Constructors
@@ -54,18 +67,18 @@ class VectorArrayGenerator(processingEnv: ProcessingEnvironment): AbsGenerator(p
                     super_("handle")
                 }
 
-                constructor {
-                    this_("create()")
+                constructor("n" of Int::class default 0) { (n) ->
+                    this_("create($n)")
                 }
 
                 // Operators
                 operator("get", "i" of Int::class, returns = Vec) { (i) ->
                     modifier(KModifier.OVERRIDE)
 
-                    + "return ${Vec.simpleName}()"
+                    + "return ${Vec.simpleName}($nget($i))"
                 }
-                operator("set", "i" of Int::class, "value" of Vec) { (i, v) ->
-                    modifier(KModifier.OVERRIDE)
+                operator("set", "i" of Int::class, "value" of Vec) {
+                    modifier(KModifier.OVERRIDE, KModifier.EXTERNAL)
                 }
             }
         }
