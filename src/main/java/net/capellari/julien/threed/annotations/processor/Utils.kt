@@ -61,14 +61,24 @@ internal class Utils(val processingEnv: ProcessingEnvironment) {
 
     @RequiresApi(26)
     fun writeTo(output: Path, code: FileSpec) {
+        var out = output
+
         // Create directory(ies)
-        Files.createDirectories(output)
+        if (!Files.exists(out)) Files.createDirectory(out)
+        if (code.packageName.isNotEmpty()) {
+            for (packageComponent in code.packageName.split('.').dropLastWhile { it.isEmpty() }) {
+                out = out.resolve(packageComponent)
+            }
+        }
+
+        Files.createDirectories(out)
 
         // Write to file
         val buffer = StringBuffer()
         code.writeTo(buffer)
 
-        val out = output.resolve("${code.name}.kt")
+        out = out.resolve("${code.name}.kt")
+        log.w(out.toString())
         val writer = OutputStreamWriter(Files.newOutputStream(out), StandardCharsets.UTF_8)
 
         writer.write(buffer

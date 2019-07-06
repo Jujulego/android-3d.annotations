@@ -121,9 +121,6 @@ class MatrixGenerator(processingEnv: ProcessingEnvironment): AbsGenerator(proces
                 }
 
                 // Native methods
-                val getDataA = function("getDataA", returns = numberArray) {
-                    modifier(KModifier.PRIVATE, KModifier.EXTERNAL)
-                }
                 val getFactor = function("getFactor", "l" of Int::class, "c" of Int::class, returns = number) {
                     modifier(KModifier.PRIVATE, KModifier.EXTERNAL)
                 }
@@ -149,14 +146,10 @@ class MatrixGenerator(processingEnv: ProcessingEnvironment): AbsGenerator(proces
                     modifier(KModifier.PRIVATE, KModifier.EXTERNAL)
                 }
 
-                val timesM = function("timesM", "mat" of self, returns = Long::class) {
+                val timesM = function("timesM", "mat" of self, returns = self) {
                     modifier(KModifier.PRIVATE, KModifier.EXTERNAL)
                 }
-                val timesMA = function("timesMA", "mat" of self) {
-                    modifier(KModifier.PRIVATE, KModifier.EXTERNAL)
-                }
-
-                val timesV = function("timesV", "v" of Vec, returns = Long::class) {
+                val timesV = function("timesV", "v" of Vec, returns = Vec) {
                     modifier(KModifier.PRIVATE, KModifier.EXTERNAL)
                 }
 
@@ -166,7 +159,7 @@ class MatrixGenerator(processingEnv: ProcessingEnvironment): AbsGenerator(proces
                 }
                 val dataP = property("data" of numberArray) {
                     getter {
-                        + "return $getDataA()"
+                        modifier(KModifier.EXTERNAL)
                     }
                 }
 
@@ -302,25 +295,11 @@ class MatrixGenerator(processingEnv: ProcessingEnvironment): AbsGenerator(proces
                     + "return $self(this).also { it /= $k }"
                 }
 
-                /*operator("timesAssign", "mat" of intf) { (mat) ->
-                    modifier(KModifier.OVERRIDE)
-
-                    flow("if ($mat is $self)") {
-                        + "$timesMA($mat)"
-                    }
-
-                    + "val tmp = $self(this)"
-                    flow("for (l in 0 until $size.lig)") {
-                        flow("for (c in 0 until $size.col)") {
-                            + "this[c,l] = tmp.$lig(l) * $mat.$col(c)"
-                        }
-                    }
-                }*/
                 operator("times", "mat" of intf, returns = self) { (mat) ->
                     modifier(KModifier.OVERRIDE)
 
                     flow("if ($mat is $self)") {
-                        + "return $self($timesM($mat))"
+                        + "return $timesM($mat)"
                     }
 
                     + "return $self { l, c -> $lig(l) * $mat.$col(c) }"
@@ -330,7 +309,7 @@ class MatrixGenerator(processingEnv: ProcessingEnvironment): AbsGenerator(proces
                     modifier(KModifier.OVERRIDE)
 
                     flow("if ($v is ${Vec.simpleName})") {
-                        + "return ${Vec.simpleName}($timesV($v))"
+                        + "return $timesV($v)"
                     }
 
                     + "return ${Vec.simpleName} { $lig(it) * $v }"

@@ -43,15 +43,6 @@ class VectorArrayGenerator(processingEnv: ProcessingEnvironment): AbsGenerator(p
                     }
                 }
 
-                // Natives methods
-                val nget = function("nget", "i" of Int::class, returns = Long::class) {
-                    modifier(KModifier.PRIVATE, KModifier.EXTERNAL)
-                }
-
-                function("add", "v" of Vec) {
-                    modifier(KModifier.OVERRIDE, KModifier.EXTERNAL)
-                }
-
                 // Properties
                 property("size" of Int::class) {
                     modifier(KModifier.OVERRIDE)
@@ -72,12 +63,15 @@ class VectorArrayGenerator(processingEnv: ProcessingEnvironment): AbsGenerator(p
                 }
 
                 // Operators
-                operator("get", "i" of Int::class, returns = Vec) { (i) ->
-                    modifier(KModifier.OVERRIDE)
-
-                    + "return ${Vec.simpleName}($nget($i))"
+                operator("get", "i" of Int::class, returns = Vec) {
+                    modifier(KModifier.OVERRIDE, KModifier.EXTERNAL)
                 }
                 operator("set", "i" of Int::class, "value" of Vec) {
+                    modifier(KModifier.OVERRIDE, KModifier.EXTERNAL)
+                }
+
+                // Methods
+                function("add", "element" of Vec, returns = Boolean::class) {
                     modifier(KModifier.OVERRIDE, KModifier.EXTERNAL)
                 }
             }
