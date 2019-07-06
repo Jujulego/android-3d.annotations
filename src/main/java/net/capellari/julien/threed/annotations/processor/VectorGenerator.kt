@@ -66,10 +66,13 @@ class VectorGenerator(processingEnv: ProcessingEnvironment): AbsGenerator(proces
                 }
 
                 // Native methods
-                val getCoord = function("getCoord", "i" of Int::class, returns = number) {
+                val getDataA = function("getDataA", returns = numberArray) {
                     modifier(KModifier.PRIVATE, KModifier.EXTERNAL)
                 }
 
+                val getCoord = function("getCoord", "i" of Int::class, returns = number) {
+                    modifier(KModifier.PRIVATE, KModifier.EXTERNAL)
+                }
                 val setCoord = function("setCoord", "i" of Int::class, "v" of number) {
                     modifier(KModifier.PRIVATE, KModifier.EXTERNAL)
                 }
@@ -89,7 +92,7 @@ class VectorGenerator(processingEnv: ProcessingEnvironment): AbsGenerator(proces
                 // Propriétés
                 val data = property("data" of numberArray) {
                     getter {
-                        modifier(KModifier.EXTERNAL)
+                        + "return $getDataA()"
                     }
                 }
 

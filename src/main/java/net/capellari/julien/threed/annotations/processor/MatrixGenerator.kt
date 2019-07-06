@@ -121,6 +121,9 @@ class MatrixGenerator(processingEnv: ProcessingEnvironment): AbsGenerator(proces
                 }
 
                 // Native methods
+                val getDataA = function("getDataA", returns = numberArray) {
+                    modifier(KModifier.PRIVATE, KModifier.EXTERNAL)
+                }
                 val getFactor = function("getFactor", "l" of Int::class, "c" of Int::class, returns = number) {
                     modifier(KModifier.PRIVATE, KModifier.EXTERNAL)
                 }
@@ -159,7 +162,7 @@ class MatrixGenerator(processingEnv: ProcessingEnvironment): AbsGenerator(proces
                 }
                 val dataP = property("data" of numberArray) {
                     getter {
-                        modifier(KModifier.EXTERNAL)
+                        + "return $getDataA()"
                     }
                 }
 

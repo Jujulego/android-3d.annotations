@@ -78,7 +78,6 @@ internal class Utils(val processingEnv: ProcessingEnvironment) {
         code.writeTo(buffer)
 
         out = out.resolve("${code.name}.kt")
-        log.w(out.toString())
         val writer = OutputStreamWriter(Files.newOutputStream(out), StandardCharsets.UTF_8)
 
         writer.write(buffer

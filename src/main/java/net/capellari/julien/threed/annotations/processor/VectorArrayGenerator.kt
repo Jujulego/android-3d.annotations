@@ -21,6 +21,7 @@ class VectorArrayGenerator(processingEnv: ProcessingEnvironment): AbsGenerator(p
 
         val Mat = ClassName(pkg, getName(gen, "Mat"))
         val Vec = ClassName(pkg, getName(gen, "Vec"))
+        val Register = ClassName("$pkg.jni", "JNIRegister").parameterizedBy(Vec)
 
         val base_tpl = ClassName("$pkg.math", "VectorArray")
         val base_name = base_tpl.parameterizedBy(Vec)
@@ -44,12 +45,27 @@ class VectorArrayGenerator(processingEnv: ProcessingEnvironment): AbsGenerator(p
                 }
 
                 // Properties
+                val register = property("register" of Register default "$Register() { ${Vec.simpleName}(it) }") {
+                    modifier(KModifier.PRIVATE)
+                }
+
                 property("size" of Int::class) {
                     modifier(KModifier.OVERRIDE)
 
                     getter {
                         modifier(KModifier.EXTERNAL)
                     }
+                }
+
+                // Native calls
+                val nadd = function("nadd", "v" of Vec, returns = Boolean::class) {
+                    modifier(KModifier.EXTERNAL)
+                }
+                val nget = function("nget", "i" of Int::class, returns = Long::class) {
+                    modifier(KModifier.EXTERNAL)
+                }
+                val nset = function("nset", "i" of Int::class, "v" of Vec) {
+                    modifier(KModifier.EXTERNAL)
                 }
 
                 // Constructors
@@ -63,16 +79,29 @@ class VectorArrayGenerator(processingEnv: ProcessingEnvironment): AbsGenerator(p
                 }
 
                 // Operators
-                operator("get", "i" of Int::class, returns = Vec) {
-                    modifier(KModifier.OVERRIDE, KModifier.EXTERNAL)
+                operator("get", "i" of Int::class, returns = Vec) { (i) ->
+                    modifier(KModifier.OVERRIDE)
+
+                    + "return $register.get($nget($i))"
                 }
-                operator("set", "i" of Int::class, "value" of Vec) {
-                    modifier(KModifier.OVERRIDE, KModifier.EXTERNAL)
+                operator("set", "i" of Int::class, "value" of Vec) { (i, v) ->
+                    modifier(KModifier.OVERRIDE)
+
+                    + "$nset($i, $v)"
+                    + "$register.add($v)"
                 }
 
                 // Methods
-                function("add", "element" of Vec, returns = Boolean::class) {
-                    modifier(KModifier.OVERRIDE, KModifier.EXTERNAL)
+                function("add", "element" of Vec, returns = Boolean::class) { (v) ->
+                    modifier(KModifier.OVERRIDE)
+
+                    + "val r = $nadd($v)"
+
+                    flow("if (r)") {
+                        +"$register.add($v)"
+                    }
+
+                    + "return r"
                 }
             }
         }
