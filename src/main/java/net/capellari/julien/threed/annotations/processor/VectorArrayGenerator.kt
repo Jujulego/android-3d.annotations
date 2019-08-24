@@ -59,19 +59,31 @@ class VectorArrayGenerator(processingEnv: ProcessingEnvironment): AbsGenerator(p
 
                 // Native calls
                 val nadd = function("nadd", "v" of Vec, returns = Boolean::class) {
-                    modifier(KModifier.EXTERNAL)
+                    modifier(KModifier.EXTERNAL, KModifier.PRIVATE)
+                }
+                val ninsert = function("ninsert", "i" of Int::class, "v" of Vec, returns = Boolean::class) {
+                    modifier(KModifier.EXTERNAL, KModifier.PRIVATE)
                 }
                 val nget = function("nget", "i" of Int::class, returns = Long::class) {
-                    modifier(KModifier.EXTERNAL)
+                    modifier(KModifier.EXTERNAL, KModifier.PRIVATE)
                 }
                 val nset = function("nset", "i" of Int::class, "v" of Vec) {
-                    modifier(KModifier.EXTERNAL)
+                    modifier(KModifier.EXTERNAL, KModifier.PRIVATE)
                 }
                 val nfind = function("find", "v" of Vec, returns = Int::class) {
-                    modifier(KModifier.EXTERNAL)
+                    modifier(KModifier.EXTERNAL, KModifier.PRIVATE)
                 }
-                val nremove = function("nremove", "v" of Vec, returns = Boolean::class) {
-                    modifier(KModifier.EXTERNAL)
+                val nrfind = function("rfind", "v" of Vec, returns = Int::class) {
+                    modifier(KModifier.EXTERNAL, KModifier.PRIVATE)
+                }
+                val nerase = function("nerase", "v" of Vec, returns = Boolean::class) {
+                    modifier(KModifier.EXTERNAL, KModifier.PRIVATE)
+                }
+                val nremove = function("nremove", "i" of Int::class) {
+                    modifier(KModifier.EXTERNAL, KModifier.PRIVATE)
+                }
+                val nclear = function("nclear") {
+                    modifier(KModifier.EXTERNAL, KModifier.PRIVATE)
                 }
 
                 // Constructors
@@ -85,23 +97,30 @@ class VectorArrayGenerator(processingEnv: ProcessingEnvironment): AbsGenerator(p
                 }
 
                 // Operators
-                operator("get", "i" of Int::class, returns = Vec) { (i) ->
+                val get = operator("get", "index" of Int::class, returns = Vec) { (i) ->
                     modifier(KModifier.OVERRIDE)
 
                     + "return $register.get($nget($i))"
                 }
-                operator("set", "i" of Int::class, "element" of Vec) { (i, v) ->
+                operator("set", "index" of Int::class, "element" of Vec, returns = Vec) { (i, v) ->
                     modifier(KModifier.OVERRIDE)
 
+                    + "val p = $get($i)"
                     + "$nset($i, $v)"
                     + "$register.add($v)"
+                    + "return p"
                 }
 
                 // Methods
-                function("contains", "element" of Vec, returns = Boolean::class) { (v) ->
+                function("indexOf", "element" of Vec, returns = Int::class) { (v) ->
                     modifier(KModifier.OVERRIDE)
 
-                    + "return $nfind($v) != -1"
+                    + "return $nfind($v)"
+                }
+                function("lastIndexOf", "element" of Vec, returns = Int::class) { (v) ->
+                    modifier(KModifier.OVERRIDE)
+
+                    + "return $nrfind($v)"
                 }
 
                 function("add", "element" of Vec, returns = Boolean::class) { (v) ->
@@ -115,11 +134,32 @@ class VectorArrayGenerator(processingEnv: ProcessingEnvironment): AbsGenerator(p
 
                     + "return r"
                 }
+                function("add", "index" of Int::class, "element" of Vec) { (i, v) ->
+                    modifier(KModifier.OVERRIDE)
+
+                    flow("if ($ninsert($i, $v))") {
+                        + "$register.add($v)"
+                    }
+                }
 
                 function("remove", "element" of Vec, returns = Boolean::class) { (v) ->
                     modifier(KModifier.OVERRIDE)
 
-                    + "return $nremove($v)"
+                    + "return $nerase($v)"
+                }
+
+                function("removeAt", "index" of Int::class, returns = Vec) { (i) ->
+                    modifier(KModifier.OVERRIDE)
+
+                    + "val p = $get($i)"
+                    + "$nremove($i)"
+                    + "return p"
+                }
+
+                function("clear") {
+                    modifier(KModifier.OVERRIDE)
+
+                    + "return $nclear()"
                 }
             }
         }
