@@ -161,6 +161,13 @@ class VectorArrayGenerator(processingEnv: ProcessingEnvironment): AbsGenerator(p
 
                     + "return $nclear()"
                 }
+
+                function("subList", "fromIndex" of Int::class, "toIndex" of Int::class, returns = self) { (from, to) ->
+                    modifier(KModifier.OVERRIDE)
+
+                    + "val s = $to - $from"
+                    + "return $self(s).also { (0 until s).forEach { i -> it.add(this[$from + i]) } }"
+                }
             }
         }
 
