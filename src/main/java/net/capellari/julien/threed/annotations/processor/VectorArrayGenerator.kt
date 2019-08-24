@@ -67,6 +67,12 @@ class VectorArrayGenerator(processingEnv: ProcessingEnvironment): AbsGenerator(p
                 val nset = function("nset", "i" of Int::class, "v" of Vec) {
                     modifier(KModifier.EXTERNAL)
                 }
+                val nfind = function("find", "v" of Vec, returns = Int::class) {
+                    modifier(KModifier.EXTERNAL)
+                }
+                val nremove = function("nremove", "v" of Vec, returns = Boolean::class) {
+                    modifier(KModifier.EXTERNAL)
+                }
 
                 // Constructors
                 constructor("handle" of Long::class, primary = true) {
@@ -84,7 +90,7 @@ class VectorArrayGenerator(processingEnv: ProcessingEnvironment): AbsGenerator(p
 
                     + "return $register.get($nget($i))"
                 }
-                operator("set", "i" of Int::class, "value" of Vec) { (i, v) ->
+                operator("set", "i" of Int::class, "element" of Vec) { (i, v) ->
                     modifier(KModifier.OVERRIDE)
 
                     + "$nset($i, $v)"
@@ -92,16 +98,28 @@ class VectorArrayGenerator(processingEnv: ProcessingEnvironment): AbsGenerator(p
                 }
 
                 // Methods
+                function("contains", "element" of Vec, returns = Boolean::class) { (v) ->
+                    modifier(KModifier.OVERRIDE)
+
+                    + "return $nfind($v) != -1"
+                }
+
                 function("add", "element" of Vec, returns = Boolean::class) { (v) ->
                     modifier(KModifier.OVERRIDE)
 
                     + "val r = $nadd($v)"
 
                     flow("if (r)") {
-                        +"$register.add($v)"
+                        + "$register.add($v)"
                     }
 
                     + "return r"
+                }
+
+                function("remove", "element" of Vec, returns = Boolean::class) { (v) ->
+                    modifier(KModifier.OVERRIDE)
+
+                    + "return $nremove($v)"
                 }
             }
         }
