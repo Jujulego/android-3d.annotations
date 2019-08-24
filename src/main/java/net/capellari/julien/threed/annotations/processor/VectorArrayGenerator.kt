@@ -169,6 +169,11 @@ class VectorArrayGenerator(processingEnv: ProcessingEnvironment): AbsGenerator(p
                     + "return $self(s).also { (0 until s).forEach { i -> it.add(this[$from + i]) } }"
                 }
             }
+
+            // Functions
+            function("arrayOf", vararg("vectors" of Vec), returns = VecArr) { (v) ->
+                + "return $VecArr().apply { addAll($v) }"
+            }
         }
 
         utils.writeTo(utils.sourceDir, code.spec)
