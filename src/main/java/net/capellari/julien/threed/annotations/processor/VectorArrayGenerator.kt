@@ -171,7 +171,7 @@ class VectorArrayGenerator(processingEnv: ProcessingEnvironment): AbsGenerator(p
             }
 
             // Functions
-            function("arrayOf", vararg("vectors" of Vec), returns = VecArr) { (v) ->
+            function("vectorArrayOf", vararg("vectors" of Vec), returns = VecArr) { (v) ->
                 + "return $VecArr().apply { addAll($v) }"
             }
         }
