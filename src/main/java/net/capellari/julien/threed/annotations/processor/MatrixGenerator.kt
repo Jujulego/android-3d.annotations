@@ -5,6 +5,7 @@ import com.squareup.kotlinpoet.*
 import com.squareup.kotlinpoet.ParameterizedTypeName.Companion.parameterizedBy
 import net.capellari.julien.kotlinwriter.*
 import net.capellari.julien.threed.annotations.math.Generator
+import net.capellari.julien.threed.annotations.math.NumberType
 import javax.annotation.processing.ProcessingEnvironment
 import javax.lang.model.element.TypeElement
 
@@ -90,6 +91,17 @@ class MatrixGenerator(processingEnv: ProcessingEnvironment): AbsGenerator(proces
                         }
                         function("lookAt", "eye" of Vec3, "center" of Vec3, "up" of Vec3, returns = self) { (eye, center, up) ->
                             + "return $self($nlookAt($eye, $center, $up))"
+                        }
+
+                        if (gen.type == NumberType.FLOAT) {
+                            // frustum
+                            val nfrustum = function("nfrustum", "left" of Float::class, "right" of Float::class, "bottom" of Float::class, "top" of Float::class, "near" of Float::class, "far" of Float::class, returns = Long::class) {
+                                annotate<JvmStatic>()
+                                modifier(KModifier.PRIVATE, KModifier.EXTERNAL)
+                            }
+                            function("frustum", "left" of Float::class, "right" of Float::class, "bottom" of Float::class, "top" of Float::class, "near" of Float::class, "far" of Float::class, returns = self) { args ->
+                                + "return $self($nfrustum(${args.joinToString(", ")}))"
+                            }
                         }
                     }
                 }
@@ -348,6 +360,12 @@ class MatrixGenerator(processingEnv: ProcessingEnvironment): AbsGenerator(proces
 
                 function("lookAt", "eye" of Vec3, "center" of Vec3, "up" of Vec3, returns = Mat) { (eye, center, up) ->
                     + "return $Mat.lookAt($eye, $center, $up)"
+                }
+
+                if (gen.type == NumberType.FLOAT) {
+                    function("frustum", "left" of Float::class, "right" of Float::class, "bottom" of Float::class, "top" of Float::class, "near" of Float::class, "far" of Float::class, returns = Mat) { args ->
+                        + "return $Mat.frustum(${args.joinToString(", ")})"
+                    }
                 }
             }
         }
