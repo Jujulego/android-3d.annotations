@@ -75,3 +75,8 @@ val Generator.array_gen: String get() = when(type) {
     NumberType.INT   -> "intArrayOf"
     NumberType.FLOAT -> "floatArrayOf"
 }
+
+val Generator.gpu_type: String get() = when(type) {
+    NumberType.INT   -> "Type.INT"
+    NumberType.FLOAT -> "Type.FLOAT"
+}

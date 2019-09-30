@@ -38,8 +38,16 @@ class VectorGenerator(processingEnv: ProcessingEnvironment): AbsGenerator(proces
 
         // Generate class
         val code = createFile(pkg, getName(gen, "Vec")) {
+            import("net.capellari.julien.threed.gpu", "Type")
+
             // Classes
             val Vec = class_ { self ->
+                // annotations
+                annotate(
+                    ClassName("net.capellari.julien.threed.annotations", "GPUType"),
+                    "type" to gen.gpu_type, "size" to gen.deg
+                )
+
                 // superclass
                 superclass("net.capellari.julien.threed.jni", "JNIClass", "handle")
 
