@@ -2,7 +2,6 @@ package net.capellari.julien.threed.annotations.processor
 
 import androidx.annotation.RequiresApi
 import com.google.auto.service.AutoService
-import net.capellari.julien.threed.annotations.Program
 import net.capellari.julien.threed.annotations.math.Generate
 import net.capellari.julien.threed.annotations.math.Generators
 import javax.annotation.processing.*
@@ -29,7 +28,6 @@ class ThreedAnnotationProcessor : AbstractProcessor() {
     // Méthodes
     override fun getSupportedAnnotationTypes(): MutableSet<String> {
         return mutableSetOf(
-            canonicalName<Program>(),
             canonicalName<Generate>()
         )
     }
